@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+<title>Bitácora Bebé · El registro diario de tu bebé</title>
+<meta name="description" content="El registro diario de tu bebé: alimentación, sueño, higiene, salud, medicación y observaciones. Los datos quedan en tu dispositivo." />
+<meta name="color-scheme" content="light" />
+<meta name="theme-color" content="#fcf9f3" />
+
+<!-- PWA. Todas las rutas son relativas para poder publicar en una subcarpeta
+     (GitHub Pages) o en la raíz de un dominio propio sin tocar nada. -->
+<link rel="manifest" href="./manifest.webmanifest" />
+<link rel="icon" href="./icons/icon-192.png" sizes="192x192" type="image/png" />
+<link rel="icon" href="./icons/icon-512.png" sizes="512x512" type="image/png" />
+
+<!-- iOS / iPadOS: Safari no lee el manifest para la pantalla de inicio. -->
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="Bitácora Bebé" />
+<link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png" />
+
+<link rel="stylesheet" href="./assets/app.css" />
+</head>
+<body>
+
+<div data-noprint="1" class="wrap">
+
+  <header class="hd">
+    <div>
+      <div class="brand-row">
+        <span class="brand-dot"></span>
+        <span class="brand-txt">Mi Bebé Hoy · Registro diario de sus cuidados</span>
+      </div>
+      <input id="child" class="child-input" aria-label="Nombre del niño" placeholder="Nombre" autocomplete="off" />
+      <div id="dateLabel" class="date-label"></div>
+    </div>
+
+    <div class="daynav">
+      <button id="prevDay" class="navbtn" aria-label="Día anterior" type="button">&lsaquo;</button>
+      <input id="datePick" type="date" class="datepick" aria-label="Seleccionar fecha" />
+      <button id="nextDay" class="navbtn" aria-label="Día siguiente" type="button">&rsaquo;</button>
+      <button id="todayBtn" class="todaybtn" type="button">Hoy</button>
+    </div>
+  </header>
+
+  <div id="ongoingSlot"></div>
+
+  <div class="cols">
+
+    <div class="col-main">
+
+      <section class="card">
+        <div class="eyebrow eyebrow--reg">Registrar</div>
+        <div id="regGrid" class="reg-grid"></div>
+      </section>
+
+      <section class="card card--timeline">
+        <div class="tl-head">
+          <div class="eyebrow">Línea temporal del día</div>
+          <div id="tlCount" class="tl-count"></div>
+        </div>
+        <div id="timeline"></div>
+        <div class="tl-tail"></div>
+      </section>
+    </div>
+
+    <div class="col-side">
+      <section class="card">
+        <div class="eyebrow eyebrow--sum">Resumen del día</div>
+        <div id="summary"></div>
+      </section>
+
+      <section class="share-card">
+        <div class="eyebrow" style="margin-bottom:12px">Compartir el registro</div>
+        <div class="share-desc">Genera una versión limpia para enviar a otra persona o para llevar al pediatra.</div>
+        <div class="share-stack">
+          <button id="openShare" class="btn-primary" type="button">Compartir</button>
+          <button id="openPdf" class="btn-secondary" type="button">Descargar PDF</button>
+        </div>
+      </section>
+
+      <section class="share-card">
+        <div class="eyebrow" style="margin-bottom:12px">Respaldo de los datos</div>
+        <div class="share-desc">Guarda una copia de todos los registros en un archivo. Sirve para recuperarlos si cambias de navegador o de dispositivo.</div>
+        <div class="share-stack">
+          <button id="exportBackup" class="btn-secondary" type="button">Exportar respaldo</button>
+          <button id="importBackup" class="btn-secondary" type="button">Importar respaldo</button>
+        </div>
+        <input id="importFile" type="file" accept="application/json,.json" hidden />
+      </section>
+
+      <div class="privacy">Los registros se guardan solo en este navegador, en este dispositivo. No se envían a ningún servidor.</div>
+    </div>
+  </div>
+</div>
+
+<div id="modalSlot"></div>
+<div id="toastSlot" aria-live="polite"></div>
+<div id="printSlot" data-printsheet="1"></div>
+
+<script defer src="./assets/jspdf.umd.min.js"></script>
+<script defer src="./assets/app.js"></script>
+</body>
+</html>
