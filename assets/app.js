@@ -179,6 +179,30 @@
   }
 
   function regLabel(n) { return n === 1 ? '1 registro' : n + ' registros'; }
+
+  /* Métricas simples del día. Todo se calcula sobre los mismos tramos que ya
+     usa el resumen, así que un sueño que cruza medianoche aporta a cada día
+     solo la parte que le corresponde. No se estima ni se completa nada. */
+  function dayMetrics(key) {
+    var rows = dayRows(key), a = dayStart(key), b = a + DAY;
+    var longest = 0, sleeps = 0;
+    rows.forEach(function (x) {
+      if (x.ev.cat !== 'sleep') return;
+      sleeps++;
+      var m = overlapMin(a, b, x.ev.at, sleepEnd(x.ev));
+      if (m > longest) longest = m;
+    });
+    return {
+      total: rows.length,
+      first: rows.length ? rows[0] : null,
+      last: rows.length ? rows[rows.length - 1] : null,
+      longest: sleeps ? longest : 0
+    };
+  }
+
+  function rowLabel(x) {
+    return (x.cont ? '00:00' : fmtTime(x.ev.at)) + ' · ' + CATS[x.ev.cat].short;
+  }
   function dot(color, size) {
     var s = size || 10;
     return 'width:' + s + 'px;height:' + s + 'px;border-radius:50%;flex:none;background:' + color;
@@ -211,6 +235,8 @@
     var childEl = $('child'), dateEl = $('datePick');
     if (document.activeElement !== childEl && childEl.value !== state.child) childEl.value = state.child;
     if (document.activeElement !== dateEl && dateEl.value !== key) dateEl.value = key;
+    // La ayuda solo aparece mientras no hay nombre: después estorba.
+    $('childHint').hidden = !!state.child.trim();
     $('dateLabel').textContent = cap(fmtDay(key)) + (key === todayKey ? ' · hoy' : '');
   }
 
@@ -268,6 +294,13 @@
 
   function renderSummary() {
     var s = daySummary(state.dateKey);
+    var m = dayMetrics(state.dateKey);
+    var isToday = state.dateKey === keyOf(new Date());
+
+    var head = m.total
+      ? (isToday ? 'Hoy llevas ' : 'Ese día: ') + '<b>' + esc(regLabel(m.total)) + '</b>' + (isToday ? '.' : '.')
+      : 'Todavía no hay registros de este día.';
+
     var items = [
       { k: 'feed', value: regLabel(s.counts.feed) },
       { k: 'sleep', value: s.periods ? s.periods + (s.periods === 1 ? ' período · ' : ' períodos · ') + fmtDur(s.mins) : '0 períodos' },
@@ -276,14 +309,31 @@
       { k: 'med', value: regLabel(s.counts.med) },
       { k: 'note', value: regLabel(s.counts.note) }
     ];
-    $('summary').innerHTML = items.map(function (it) {
-      var c = CATS[it.k];
-      return '<div class="sum-row">' +
-        '<span style="' + dot(c.color, 10) + '"></span>' +
-        '<div class="sum-label">' + esc(c.short) + '</div>' +
-        '<div class="sum-value">' + esc(it.value) + '</div>' +
-      '</div>';
-    }).join('');
+
+    var extra = [];
+    if (m.total) {
+      extra.push({ label: 'Primer registro', value: rowLabel(m.first) });
+      if (m.total > 1) extra.push({ label: 'Último registro', value: rowLabel(m.last) });
+      if (m.longest > 0) extra.push({ label: 'Sueño más largo del día', value: fmtDur(m.longest) });
+    }
+
+    $('summary').innerHTML =
+      '<div class="sum-total">' + head + '</div>' +
+      items.map(function (it) {
+        var c = CATS[it.k];
+        return '<div class="sum-row">' +
+          '<span style="' + dot(c.color, 10) + '"></span>' +
+          '<div class="sum-label">' + esc(c.short) + '</div>' +
+          '<div class="sum-value">' + esc(it.value) + '</div>' +
+        '</div>';
+      }).join('') +
+      extra.map(function (it) {
+        return '<div class="sum-row">' +
+          '<span class="sum-gap"></span>' +
+          '<div class="sum-label">' + esc(it.label) + '</div>' +
+          '<div class="sum-value">' + esc(it.value) + '</div>' +
+        '</div>';
+      }).join('');
   }
 
   function render() {
@@ -680,28 +730,52 @@
     return r.from === r.to ? fmtDay(r.from, true) : fmtDay(r.from, true) + ' — ' + fmtDay(r.to, true);
   }
 
+  /* Frases del resumen en lenguaje natural, solo con lo que hay.
+     Nunca se muestra una categoría vacía ni se interpreta nada. */
+  function summaryLines(s) {
+    var L = [];
+    if (s.counts.feed) L.push(s.counts.feed + (s.counts.feed === 1 ? ' alimentación' : ' alimentaciones'));
+    if (s.periods) L.push(s.periods + (s.periods === 1 ? ' período de sueño · ' : ' períodos de sueño · ') + fmtDur(s.mins));
+    if (s.counts.care) L.push(s.counts.care + (s.counts.care === 1 ? ' registro de higiene' : ' registros de higiene'));
+    if (s.counts.health) L.push(s.counts.health + (s.counts.health === 1 ? ' registro de salud' : ' registros de salud'));
+    if (s.counts.med) L.push(s.counts.med + (s.counts.med === 1 ? ' registro de medicación' : ' registros de medicación'));
+    if (s.counts.note) L.push(s.counts.note + (s.counts.note === 1 ? ' observación' : ' observaciones'));
+    return L;
+  }
+
+  function eventLine(x) {
+    var time = x.cont ? '00:00' : fmtTime(x.ev.at);
+    var pre = x.cont ? 'viene de ayer · ' : '';
+    var note = (x.ev.note && x.ev.cat !== 'note') ? ' (' + x.ev.note + ')' : '';
+    return time + ' — ' + CATS[x.ev.cat].short + ': ' + pre + detailOf(x.ev) + note;
+  }
+
   function shareText(share) {
     var r = rangeKeys(share);
-    var L = [APP_NAME + ' — ' + (state.child || 'Sin nombre'), cap(periodLabel(r)), ''];
+    var oneDay = r.keys.length === 1;
+    var L = [APP_NAME, ''];
+    if (state.child) L.push(state.child);
+    L.push(oneDay ? 'Registro del ' + fmtDay(r.from, true) : 'Registro del ' + periodLabel(r));
+    L.push('');
+
     r.keys.forEach(function (key) {
-      var rows = dayRows(key), s = daySummary(key);
-      L.push(fmtDay(key).toUpperCase());
-      if (!rows.length) L.push('  Sin registros');
-      rows.forEach(function (x) {
-        var time = x.cont ? '00:00' : fmtTime(x.ev.at);
-        var pre = x.cont ? 'Sueño que continúa · ' : '';
-        L.push('  ' + time + ' · ' + CATS[x.ev.cat].short + ' — ' + pre + detailOf(x.ev) + (x.ev.note && x.ev.cat !== 'note' ? ' — ' + x.ev.note : ''));
-      });
-      var bits = [];
-      if (s.counts.feed) bits.push('Alimentación ' + s.counts.feed);
-      if (s.periods) bits.push('Sueño ' + s.periods + ' períodos, ' + fmtDur(s.mins));
-      if (s.counts.care) bits.push('Higiene ' + s.counts.care);
-      if (s.counts.health) bits.push('Salud ' + s.counts.health);
-      if (s.counts.med) bits.push('Medicación ' + s.counts.med);
-      if (s.counts.note) bits.push('Observaciones ' + s.counts.note);
-      if (bits.length) L.push('  Resumen: ' + bits.join(' · '));
+      var rows = dayRows(key), sum = summaryLines(daySummary(key));
+      if (!oneDay) L.push(cap(fmtDay(key)));
+      if (!rows.length) {
+        L.push(oneDay ? 'Sin registros.' : '  Sin registros.');
+        L.push('');
+        return;
+      }
+      if (sum.length) {
+        L.push('Resumen');
+        sum.forEach(function (t) { L.push(t); });
+        L.push('');
+      }
+      L.push('Línea del día');
+      rows.forEach(function (x) { L.push(eventLine(x)); });
       L.push('');
     });
+
     L.push('Registro introducido por el cuidador. No contiene recomendaciones.');
     return L.join('\n');
   }
@@ -1298,7 +1372,35 @@
   }
 
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && $('modalSlot').innerHTML) closeModal();
+    if (!$('modalSlot').innerHTML) return;
+    if (e.key === 'Escape') { closeModal(); return; }
+    if (e.key !== 'Tab') return;
+
+    // El foco no debe escaparse del modal mientras está abierto.
+    var sheet = document.querySelector('#modalSlot .sheet');
+    if (!sheet) return;
+    var all = sheet.querySelectorAll('button, input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    var focusables = [];
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      if (el.disabled || el.hidden || el.closest('[hidden]')) continue;
+      focusables.push(el);
+    }
+    if (!focusables.length) return;
+    var first = focusables[0], last = focusables[focusables.length - 1];
+    if (!sheet.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+    else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+
+  /* En el móvil, al abrirse el teclado la mitad inferior del modal queda
+     tapada. Se acerca el campo enfocado al centro de lo que queda visible. */
+  $('modalSlot').addEventListener('focusin', function (e) {
+    var el = e.target;
+    if (!el.matches || !el.matches('input, select, textarea')) return;
+    setTimeout(function () {
+      try { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (err) { /* sin soporte */ }
+    }, 300);
   });
 
   $('modalSlot').addEventListener('click', function (e) {
@@ -1330,7 +1432,12 @@
     if ((el = e.target.closest('[data-finishsleep]'))) { finishSleep(el.getAttribute('data-finishsleep')); return; }
   });
 
-  $('child').addEventListener('input', function () { state.child = this.value; persist(); });
+  $('child').addEventListener('input', function () {
+    state.child = this.value;
+    // Se actualiza aquí y no con render() para no mover el cursor mientras escribe.
+    $('childHint').hidden = !!state.child.trim();
+    persist();
+  });
   $('prevDay').addEventListener('click', function () { state.dateKey = shiftKey(state.dateKey, -1); render(); });
   $('nextDay').addEventListener('click', function () { state.dateKey = shiftKey(state.dateKey, 1); render(); });
   $('todayBtn').addEventListener('click', function () { state.dateKey = keyOf(new Date()); render(); });

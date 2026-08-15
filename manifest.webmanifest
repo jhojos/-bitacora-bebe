@@ -1,18 +1,24 @@
 {
-  "name": "Bitácora Bebé",
-  "short_name": "Bitácora",
-  "description": "El registro diario de tu bebé",
+  "name": "Mi Bebé Hoy",
+  "short_name": "Mi Bebé Hoy",
+  "description": "Registra fácilmente las tomas, el sueño, los pañales, los medicamentos y los momentos importantes de cada día.",
   "lang": "es",
   "dir": "ltr",
   "id": "./",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "display_override": ["standalone", "minimal-ui"],
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
   "orientation": "portrait",
   "theme_color": "#fcf9f3",
   "background_color": "#fcf9f3",
-  "categories": ["lifestyle", "utilities"],
+  "categories": [
+    "lifestyle",
+    "utilities"
+  ],
   "icons": [
     {
       "src": "./icons/icon-192.png",

@@ -8,12 +8,19 @@
    al que un service worker no tiene acceso. Aquí no hay sincronización,
    ni envío de información, ni peticiones a servidores externos.
 
-   Al publicar una versión nueva, sube el número de CACHE: eso descarta la
-   caché anterior y obliga a descargar los archivos actualizados.
+   Estrategia de actualización:
+     - navegación  -> primero la red, y la caché si no hay conexión;
+     - index/css/js -> se sirve la copia guardada y en paralelo se descarga
+       la versión nueva, que queda lista para la siguiente apertura;
+     - tipografías, iconos y jsPDF -> solo caché (cambian de nombre cuando
+       cambian de contenido).
+   Así una versión antigua nunca queda atrapada, aunque se olvide subir el
+   número de CACHE al publicar. Subirlo sigue siendo recomendable: fuerza
+   la descarga inmediata y descarta de golpe la caché anterior.
    ========================================================================= */
 
 var CACHE_PREFIX = 'bitacora-bebe-';
-var CACHE = CACHE_PREFIX + 'v1';
+var CACHE = CACHE_PREFIX + 'v2';
 
 /* Rutas relativas a la ubicación de este archivo, para que funcione tanto en
    la raíz de un dominio como en una subcarpeta del tipo usuario.github.io/repositorio/ */
@@ -84,17 +91,27 @@ self.addEventListener('fetch', function (event) {
     return;
   }
 
-  // Resto de archivos: primero la caché (rápido y disponible sin conexión).
+  // Archivos de la aplicación: se responde con la copia guardada y se
+  // refresca en segundo plano, para que la próxima apertura ya use la
+  // versión nueva sin depender de que se haya subido el número de CACHE.
+  var revalidate = /\/(index\.html|app\.css|app\.js|manifest\.webmanifest)$/.test(new URL(req.url).pathname);
+
   event.respondWith(
     caches.match(req).then(function (hit) {
-      if (hit) return hit;
-      return fetch(req).then(function (res) {
+      // Tipografías, iconos y jsPDF no cambian sin cambiar de nombre:
+      // si están guardados, no se vuelve a preguntar a la red.
+      if (hit && !revalidate) return hit;
+
+      var network = fetch(req).then(function (res) {
         if (res && res.status === 200 && res.type === 'basic') {
           var copy = res.clone();
           caches.open(CACHE).then(function (c) { c.put(req, copy); });
         }
         return res;
       });
+      if (!hit) return network;
+      network.catch(function () { /* sin conexión: se sigue usando la copia */ });
+      return hit;
     })
   );
 });

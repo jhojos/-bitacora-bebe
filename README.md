@@ -1,6 +1,6 @@
-# Bitácora Bebé
+# Mi Bebé Hoy
 
-El registro diario de tu bebé. Aplicación web estática e instalable (PWA).
+Registro diario de los cuidados de un bebé. Aplicación web estática e instalable (PWA).
 Sin cuentas, sin servidor, sin base de datos: **todos los datos viven en el
 dispositivo de quien la usa.**
 
@@ -67,11 +67,13 @@ Al subir una versión nueva, cambia el número de versión en la primera línea
 de `sw.js`:
 
 ```js
-var CACHE = CACHE_PREFIX + 'v1';   // → 'v2'
+var CACHE = CACHE_PREFIX + 'v2';   // → 'v3'
 ```
 
-Sin ese cambio, los dispositivos que ya la tengan instalada seguirán usando
-los archivos guardados en su caché.
+El service worker ya revalida `index.html`, `app.css` y `app.js` en segundo
+plano, así que una versión nueva llega igualmente en la siguiente apertura.
+Subir el número fuerza la descarga inmediata y descarta la caché anterior:
+hazlo siempre que cambies tipografías, iconos o jsPDF, que no se revalidan.
 
 ## Reemplazar los iconos
 

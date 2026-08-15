@@ -57,10 +57,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   border: none; background: transparent; padding: 0; width: min(9ch, 60vw);
   color: oklch(0.24 0.02 55);
 }
-.child-input::placeholder { color: oklch(0.74 0.02 60); }
+.child-input::placeholder { color: oklch(0.66 0.02 60); }
 .child-input:focus-visible { outline: 2px solid oklch(0.45 0.06 45); outline-offset: 4px; border-radius: 4px; }
 
 .date-label { margin-top: 8px; font-size: 17px; color: oklch(0.45 0.015 60); }
+.child-hint { margin-top: 6px; font-size: 13.5px; line-height: 1.5; color: oklch(0.53 0.012 60); max-width: 40ch; text-wrap: pretty; }
 
 .daynav { display: flex; align-items: center; gap: 8px; }
 .navbtn {
@@ -136,12 +137,12 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 
 /* ---------- línea temporal ---------- */
 .tl-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
-.tl-count { font-size: 13px; color: oklch(0.58 0.012 60); }
+.tl-count { font-size: 13px; color: oklch(0.55 0.012 60); }
 .tl-empty { padding: 34px 6px 40px; text-align: center; color: oklch(0.58 0.012 60); font-size: 15px; line-height: 1.6; }
 .tl-row { display: flex; gap: 14px; padding: 14px 0; border-top: 1px solid oklch(0.945 0.008 75); }
 .tl-timecol { width: 56px; flex: none; padding-top: 1px; }
 .tl-time { font-variant-numeric: tabular-nums; font-size: 15.5px; font-weight: 600; color: oklch(0.3 0.015 60); }
-.tl-sub { font-size: 11.5px; color: oklch(0.62 0.012 60); }
+.tl-sub { font-size: 11.5px; color: oklch(0.55 0.012 60); }
 .tl-dotcol { flex: none; display: flex; flex-direction: column; align-items: center; padding-top: 6px; }
 .tl-body { flex: 1; min-width: 0; }
 .tl-cat { font-size: 11.5px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 3px; }
@@ -163,6 +164,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .sum-row { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid oklch(0.945 0.008 75); }
 .sum-label { flex: 1; font-size: 15.5px; color: oklch(0.3 0.015 60); }
 .sum-value { font-size: 15px; font-variant-numeric: tabular-nums; color: oklch(0.42 0.015 60); text-align: right; }
+.sum-total { font-size: 15.5px; color: oklch(0.3 0.015 60); padding-bottom: 10px; }
+.sum-total b { font-weight: 600; }
+.sum-gap { width: 10px; flex: none; }
 
 /* ---------- compartir ---------- */
 .share-card { background: oklch(0.975 0.012 75); border: 1px solid oklch(0.9 0.014 70); border-radius: 20px; padding: 18px; }
@@ -181,7 +185,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   .btn-secondary:hover { background: oklch(0.97 0.008 75); }
 }
 .btn-primary[disabled], .btn-secondary[disabled] { opacity: 0.6; cursor: default; }
-.privacy { font-size: 13px; line-height: 1.6; color: oklch(0.58 0.012 60); padding: 0 4px; text-wrap: pretty; }
+.privacy { font-size: 13px; line-height: 1.6; color: oklch(0.53 0.012 60); padding: 0 4px; text-wrap: pretty; }
+.privacy strong { font-weight: 600; color: oklch(0.42 0.015 60); }
+.privacy p { margin: 0 0 8px; }
+.privacy p:last-child { margin-bottom: 0; }
 
 /* ---------- modales ---------- */
 .overlay {
@@ -210,7 +217,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .field[hidden] { display: none; }
 .label { display: block; font-size: 13.5px; font-weight: 600; color: oklch(0.4 0.015 60); margin-bottom: 7px; }
 .label--chips { margin-bottom: 9px; }
-.opt { font-weight: 400; color: oklch(0.6 0.012 60); }
+.opt { font-weight: 400; color: oklch(0.55 0.012 60); }
 .input, .select {
   width: 100%; min-height: 50px; border-radius: 13px; border: 1px solid oklch(0.89 0.012 70);
   padding: 0 14px; background: oklch(0.99 0.004 75);
@@ -236,7 +243,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   background: oklch(0.32 0.045 265); color: oklch(0.97 0.01 265); cursor: pointer; font-size: 16.5px; font-weight: 600;
 }
 @media (hover: hover) { .sleepnow:hover { background: oklch(0.27 0.045 265); } }
-.divider { display: flex; align-items: center; gap: 10px; margin: 16px 0 4px; color: oklch(0.6 0.012 60); font-size: 13px; }
+.divider { display: flex; align-items: center; gap: 10px; margin: 16px 0 4px; color: oklch(0.55 0.012 60); font-size: 13px; }
 .divider span.line { flex: 1; height: 1px; background: oklch(0.92 0.01 70); }
 
 .row2 { display: flex; gap: 10px; }
@@ -280,7 +287,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .share-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
 .share-grid .btn-primary, .share-grid .btn-secondary { font-size: 15.5px; }
 .share-grid .btn-secondary { font-weight: 400; }
-.share-foot { font-size: 13px; color: oklch(0.58 0.012 60); line-height: 1.6; margin-top: 14px; text-wrap: pretty; }
+.share-foot { font-size: 13px; color: oklch(0.53 0.012 60); line-height: 1.6; margin-top: 14px; text-wrap: pretty; }
 .share-dates { display: flex; gap: 10px; margin-bottom: 16px; }
 .share-dates > div { flex: 1; min-width: 0; }
 .share-dates label { display: block; font-size: 13px; color: oklch(0.5 0.015 60); margin-bottom: 6px; }

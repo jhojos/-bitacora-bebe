@@ -4,8 +4,8 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 
-<title>Bitácora Bebé · El registro diario de tu bebé</title>
-<meta name="description" content="El registro diario de tu bebé: alimentación, sueño, higiene, salud, medicación y observaciones. Los datos quedan en tu dispositivo." />
+<title>Mi Bebé Hoy · Registro diario de sus cuidados</title>
+<meta name="description" content="Registra fácilmente las tomas, el sueño, los pañales, los medicamentos y los momentos importantes de cada día. Los datos quedan en tu dispositivo." />
 <meta name="color-scheme" content="light" />
 <meta name="theme-color" content="#fcf9f3" />
 
@@ -19,7 +19,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-<meta name="apple-mobile-web-app-title" content="Bitácora Bebé" />
+<meta name="apple-mobile-web-app-title" content="Mi Bebé Hoy" />
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png" />
 
 <link rel="stylesheet" href="./assets/app.css" />
@@ -34,8 +34,9 @@
         <span class="brand-dot"></span>
         <span class="brand-txt">Mi Bebé Hoy · Registro diario de sus cuidados</span>
       </div>
-      <input id="child" class="child-input" aria-label="Nombre del niño" placeholder="Nombre" autocomplete="off" />
+      <input id="child" class="child-input" aria-label="Nombre del bebé" placeholder="Nombre" autocomplete="off" />
       <div id="dateLabel" class="date-label"></div>
+      <div id="childHint" class="child-hint" hidden>Escribe arriba el nombre del bebé. Aparecerá en tus registros, en el PDF y en lo que compartas.</div>
     </div>
 
     <div class="daynav">
@@ -54,6 +55,7 @@
 
       <section class="card">
         <div class="eyebrow eyebrow--reg">Registrar</div>
+        <div class="share-desc">Registra fácilmente las tomas, el sueño, los pañales, los medicamentos y los momentos importantes de cada día.</div>
         <div id="regGrid" class="reg-grid"></div>
       </section>
 
@@ -84,7 +86,7 @@
 
       <section class="share-card">
         <div class="eyebrow" style="margin-bottom:12px">Respaldo de los datos</div>
-        <div class="share-desc">Guarda una copia de todos los registros en un archivo. Sirve para recuperarlos si cambias de navegador o de dispositivo.</div>
+        <div class="share-desc">Tus registros se guardan en este dispositivo. Haz un respaldo cada cierto tiempo para conservarlos si cambias de teléfono o borras los datos del navegador.</div>
         <div class="share-stack">
           <button id="exportBackup" class="btn-secondary" type="button">Exportar respaldo</button>
           <button id="importBackup" class="btn-secondary" type="button">Importar respaldo</button>
@@ -92,7 +94,10 @@
         <input id="importFile" type="file" accept="application/json,.json" hidden />
       </section>
 
-      <div class="privacy">Los registros se guardan solo en este navegador, en este dispositivo. No se envían a ningún servidor.</div>
+      <div class="privacy">
+        <p><strong>Tus datos son privados.</strong> Los registros se guardan en este navegador, en este dispositivo, y no se envían a ningún servidor.</p>
+        <p>Eso también significa que nadie más los conserva por ti: si cambias de teléfono, borras los datos del navegador o desinstalas la aplicación, se pierden. Exporta un respaldo cada cierto tiempo.</p>
+      </div>
     </div>
   </div>
 </div>
