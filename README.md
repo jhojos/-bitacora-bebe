@@ -14,9 +14,13 @@ bitacora-bebe/
 ├── manifest.webmanifest       Datos de instalación (nombre, iconos, colores)
 ├── sw.js                      Service worker: caché de archivos para uso sin conexión
 ├── README.md                  Este archivo
+├── README-catalogo.md         Cómo mantener la sección "Descubre productos"
 ├── assets/
-│   ├── app.css                Todos los estilos
-│   ├── app.js                 Toda la lógica
+│   ├── app.css                Estilos de la bitácora
+│   ├── app.js                 Lógica de la bitácora
+│   ├── shop.css               Estilos de la capa comercial (prefijo .shop-)
+│   ├── shop.js                Lógica de la capa comercial
+│   ├── catalog.js             Datos comerciales (países, tiendas, productos)
 │   ├── jspdf.umd.min.js       Generador de PDF (biblioteca jsPDF 2.5.2, MIT)
 │   └── fonts/                 Instrument Sans e Instrument Serif (SIL OFL)
 └── icons/                     Iconos PROVISIONALES, pendientes de reemplazo
@@ -67,7 +71,7 @@ Al subir una versión nueva, cambia el número de versión en la primera línea
 de `sw.js`:
 
 ```js
-var CACHE = CACHE_PREFIX + 'v2';   // → 'v3'
+var CACHE = CACHE_PREFIX + 'v3';   // → 'v4'
 ```
 
 El service worker ya revalida `index.html`, `app.css` y `app.js` en segundo
@@ -99,6 +103,9 @@ No hay que tocar el código.
 - El service worker solo guarda los archivos de la aplicación. No tiene acceso
   a `localStorage` ni envía nada a ningún sitio.
 - No hay analítica ni rastreadores.
+- La sección "Descubre productos" es un catálogo estático: no lee los
+  registros del bebé, no guarda nada y no envía nada. Los enlaces salen
+  hacia el comercio solo cuando la persona los pulsa.
 
 ## Licencias de terceros
 

@@ -23,6 +23,8 @@
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png" />
 
 <link rel="stylesheet" href="./assets/app.css" />
+<!-- Capa comercial: hoja de estilos aislada (prefijo .shop-). -->
+<link rel="stylesheet" href="./assets/shop.css" />
 </head>
 <body>
 
@@ -98,6 +100,10 @@
         <p><strong>Tus datos son privados.</strong> Los registros se guardan en este navegador, en este dispositivo, y no se envían a ningún servidor.</p>
         <p>Eso también significa que nadie más los conserva por ti: si cambias de teléfono, borras los datos del navegador o desinstalas la aplicación, se pierden. Exporta un respaldo cada cierto tiempo.</p>
       </div>
+
+      <!-- Punto de anclaje de la capa comercial. Queda vacío si no se carga
+           shop.js: la bitácora funciona igual sin él. -->
+      <div id="shopMount"></div>
     </div>
   </div>
 </div>
@@ -108,5 +114,10 @@
 
 <script defer src="./assets/jspdf.umd.min.js"></script>
 <script defer src="./assets/app.js"></script>
+
+<!-- Capa comercial. Quitar estas dos líneas la desactiva por completo,
+     sin afectar a ninguna función de la bitácora. -->
+<script defer src="./assets/catalog.js"></script>
+<script defer src="./assets/shop.js"></script>
 </body>
 </html>

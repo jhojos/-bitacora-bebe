@@ -1,0 +1,185 @@
+/* =========================================================================
+   ESTILOS DE LA CAPA COMERCIAL — "Descubre productos".
+
+   Todo va con el prefijo .shop- y no toca ninguna regla del núcleo.
+   Los valores de color y tipografía son los del diseño existente, para que
+   la sección se sienta parte del producto sin copiar mecánicamente las
+   tarjetas de la bitácora.
+
+   Si se borra este archivo, la aplicación sigue funcionando igual.
+   ========================================================================= */
+
+.shop {
+  --shop-ink: oklch(0.26 0.015 60);
+  --shop-soft: oklch(0.45 0.015 60);
+  --shop-muted: oklch(0.53 0.012 60);
+  --shop-line: oklch(0.91 0.01 70);
+  --shop-hair: oklch(0.945 0.008 75);
+  --shop-bg: oklch(0.982 0.008 80);
+  --shop-tint: oklch(0.975 0.012 75);
+  --shop-accent: oklch(0.38 0.045 45);
+  --shop-accent-soft: oklch(0.55 0.10 40);
+}
+
+/* ---------- acceso desde la columna lateral ---------- */
+.shop-entry {
+  margin-top: 4px;
+  border: 1px dashed oklch(0.86 0.02 70);
+  border-radius: 20px;
+  padding: 16px 18px;
+  background: transparent;
+}
+.shop-entry-eyebrow {
+  font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: oklch(0.53 0.012 60); margin-bottom: 8px;
+}
+.shop-entry-desc {
+  margin: 0 0 14px; font-size: 14.5px; line-height: 1.55;
+  color: oklch(0.45 0.015 60); text-wrap: pretty;
+}
+.shop-entry-btn {
+  width: 100%; min-height: 48px; border-radius: 14px;
+  border: 1px solid oklch(0.86 0.015 70); background: #fff;
+  cursor: pointer; font-size: 15.5px; font-family: inherit; color: oklch(0.32 0.045 45);
+}
+@media (hover: hover) { .shop-entry-btn:hover { background: oklch(0.975 0.012 75); } }
+.shop-entry-btn:focus-visible { outline: 2px solid oklch(0.45 0.06 45); outline-offset: 2px; }
+
+/* ---------- panel ---------- */
+.shop-overlay {
+  position: fixed; inset: 0; z-index: 90;
+  background: oklch(0.26 0.02 60 / 0.44);
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.shop {
+  width: 100%; max-width: 620px; max-height: 94vh;
+  background: var(--shop-bg);
+  border-radius: 24px 24px 0 0;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 -20px 60px -30px oklch(0.26 0.02 60 / 0.55);
+  animation: shop-up 0.24s ease;
+  font-family: 'Instrument Sans', system-ui, sans-serif;
+  color: var(--shop-ink);
+}
+@supports (max-height: 94dvh) { .shop { max-height: 94dvh; } }
+@keyframes shop-up { from { transform: translateY(18px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .shop { animation: none; } }
+@media (min-width: 700px) {
+  .shop-overlay { align-items: center; padding: 20px; }
+  .shop { border-radius: 24px; max-height: 88vh; }
+}
+
+.shop-head {
+  flex: none; padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--shop-line); background: #fff;
+}
+.shop-head-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.shop-title { font-family: 'Instrument Serif', Georgia, serif; font-size: 27px; line-height: 1.1; margin: 0; }
+.shop-desc { margin: 6px 0 0; font-size: 14.5px; line-height: 1.55; color: var(--shop-soft); max-width: 44ch; text-wrap: pretty; }
+.shop-close {
+  width: 40px; height: 40px; flex: none; border-radius: 12px;
+  border: 1px solid var(--shop-line); background: #fff; cursor: pointer;
+  font-size: 18px; font-family: inherit; color: var(--shop-soft);
+}
+@media (hover: hover) { .shop-close:hover { background: oklch(0.965 0.008 75); } }
+
+.shop-back {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 40px; padding: 0 12px 0 8px; margin-bottom: 8px;
+  border-radius: 12px; border: 1px solid transparent; background: transparent;
+  cursor: pointer; font-size: 14.5px; font-family: inherit; color: var(--shop-soft);
+}
+@media (hover: hover) { .shop-back:hover { background: oklch(0.965 0.008 75); border-color: var(--shop-line); } }
+
+.shop-country { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+.shop-country label { font-size: 13.5px; color: var(--shop-muted); }
+.shop-country select {
+  min-height: 40px; border-radius: 11px; border: 1px solid oklch(0.89 0.012 70);
+  background: oklch(0.99 0.004 75); padding: 0 10px; font-size: 15px; font-family: inherit;
+}
+
+.shop-body { flex: 1; overflow: auto; padding: 16px 18px calc(20px + env(safe-area-inset-bottom, 0px)); -webkit-overflow-scrolling: touch; }
+
+.shop-notice {
+  border: 1px solid oklch(0.86 0.05 80); background: oklch(0.965 0.035 85);
+  color: oklch(0.38 0.06 60); border-radius: 14px; padding: 12px 14px;
+  font-size: 13.5px; line-height: 1.55; margin-bottom: 18px; text-wrap: pretty;
+}
+.shop-notice b { font-weight: 600; }
+
+/* ---------- grupos y categorías ---------- */
+.shop-group { margin-bottom: 24px; }
+.shop-group-name { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--shop-muted); }
+.shop-group-desc { margin: 6px 0 12px; font-size: 14px; line-height: 1.5; color: var(--shop-soft); text-wrap: pretty; }
+.shop-cats { display: flex; flex-direction: column; gap: 8px; }
+.shop-cat {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; min-height: 54px; padding: 0 14px;
+  border: 1px solid var(--shop-line); border-radius: 14px; background: #fff;
+  cursor: pointer; font-size: 15.5px; font-family: inherit; color: var(--shop-ink); text-align: left;
+  transition: background 0.14s ease, border-color 0.14s ease;
+}
+@media (hover: hover) { .shop-cat:hover { background: var(--shop-tint); border-color: oklch(0.84 0.02 70); } }
+.shop-cat:focus-visible { outline: 2px solid oklch(0.45 0.06 45); outline-offset: 2px; }
+.shop-cat-count { font-size: 13px; color: var(--shop-muted); flex: none; }
+.shop-cat-arrow { color: var(--shop-muted); flex: none; font-size: 17px; }
+
+/* ---------- productos ---------- */
+.shop-cat-title { font-family: 'Instrument Serif', Georgia, serif; font-size: 24px; margin: 0 0 4px; }
+.shop-cat-sub { margin: 0 0 16px; font-size: 14px; color: var(--shop-muted); }
+.shop-list { display: grid; gap: 10px; }
+@media (min-width: 560px) { .shop-list { grid-template-columns: 1fr 1fr; } }
+
+.shop-item {
+  display: flex; gap: 12px; padding: 12px;
+  border: 1px solid var(--shop-line); border-radius: 16px; background: #fff;
+}
+.shop-thumb {
+  width: 76px; height: 76px; flex: none; border-radius: 12px;
+  background: var(--shop-tint); border: 1px solid var(--shop-hair);
+  display: grid; place-items: center; overflow: hidden;
+  font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase;
+  color: oklch(0.53 0.012 60); text-align: center; padding: 4px;
+}
+.shop-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.shop-item-body { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.shop-badge {
+  display: inline-block; align-self: flex-start; margin-bottom: 5px;
+  padding: 3px 8px; border-radius: 7px;
+  background: oklch(0.93 0.03 80); color: oklch(0.4 0.06 60);
+  font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600;
+}
+.shop-name { font-size: 15.5px; font-weight: 600; line-height: 1.35; margin: 0 0 3px; text-wrap: pretty; }
+.shop-item-desc { font-size: 13.5px; line-height: 1.5; color: var(--shop-soft); margin: 0 0 6px; text-wrap: pretty; }
+.shop-meta { font-size: 13px; color: var(--shop-muted); margin-bottom: 10px; }
+.shop-price { font-size: 14.5px; color: var(--shop-ink); font-variant-numeric: tabular-nums; }
+.shop-cta {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  align-self: flex-start; margin-top: auto;
+  min-height: 44px; padding: 0 16px; border-radius: 12px;
+  background: var(--shop-accent); color: oklch(0.98 0.01 75);
+  font-size: 14.5px; font-weight: 600; text-decoration: none; border: none; cursor: pointer;
+  font-family: inherit;
+}
+@media (hover: hover) { a.shop-cta:hover { background: oklch(0.32 0.045 45); color: oklch(0.98 0.01 75); } }
+.shop-cta:focus-visible { outline: 2px solid oklch(0.45 0.06 45); outline-offset: 2px; }
+.shop-cta--off {
+  background: transparent; color: var(--shop-muted);
+  border: 1px dashed oklch(0.85 0.015 70); font-weight: 400; cursor: default;
+}
+.shop-cta-ext { font-size: 12px; opacity: 0.85; }
+
+.shop-empty {
+  border: 1px dashed oklch(0.88 0.012 70); border-radius: 16px;
+  padding: 28px 18px; text-align: center;
+  color: var(--shop-muted); font-size: 14.5px; line-height: 1.6; text-wrap: pretty;
+}
+
+/* ---------- pie ---------- */
+.shop-foot {
+  margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--shop-line);
+  font-size: 12.5px; line-height: 1.6; color: var(--shop-muted); text-wrap: pretty;
+}
+.shop-foot p { margin: 0 0 8px; }
+.shop-foot p:last-child { margin-bottom: 0; }
