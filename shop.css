@@ -23,7 +23,6 @@
 
 /* ---------- acceso desde la columna lateral ---------- */
 .shop-entry {
-  margin-top: 4px;
   border: 1px dashed oklch(0.86 0.02 70);
   border-radius: 20px;
   padding: 16px 18px;
