@@ -20,7 +20,7 @@
    ========================================================================= */
 
 var CACHE_PREFIX = 'bitacora-bebe-';
-var CACHE = CACHE_PREFIX + 'v3';
+var CACHE = CACHE_PREFIX + 'v4';
 
 /* Rutas relativas a la ubicación de este archivo, para que funcione tanto en
    la raíz de un dominio como en una subcarpeta del tipo usuario.github.io/repositorio/ */
@@ -28,21 +28,21 @@ var ASSETS = [
   './',
   './index.html',
   './manifest.webmanifest',
-  './assets/app.css',
-  './assets/app.js',
-  './assets/jspdf.umd.min.js',
-  './assets/shop.css',
-  './assets/shop.js',
-  './assets/catalog.js',
-  './assets/fonts/instrument-sans-400.woff2',
-  './assets/fonts/instrument-sans-500.woff2',
-  './assets/fonts/instrument-sans-600.woff2',
-  './assets/fonts/instrument-sans-700.woff2',
-  './assets/fonts/instrument-serif-400.woff2',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  './icons/icon-maskable-512.png',
-  './icons/apple-touch-icon-180.png'
+  './app.css',
+  './app.js',
+  './jspdf.umd.min.js',
+  './shop.css',
+  './shop.js',
+  './catalog.js',
+  './instrument-sans-400.woff2',
+  './instrument-sans-500.woff2',
+  './instrument-sans-600.woff2',
+  './instrument-sans-700.woff2',
+  './instrument-serif-400.woff2',
+  './icon-192.png',
+  './icon-512.png',
+  './icon-maskable-512.png',
+  './apple-touch-icon-180.png'
 ];
 
 self.addEventListener('install', function (event) {

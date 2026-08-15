@@ -4,9 +4,9 @@ Todo lo comercial vive en tres archivos. **Ninguno de ellos toca la bitácora.**
 
 | Archivo | Qué contiene |
 |---|---|
-| `assets/catalog.js` | Los datos: países, comercios, grupos, categorías y productos |
-| `assets/shop.js` | La lógica: cómo se muestra y se navega la sección |
-| `assets/shop.css` | Los estilos, todos con el prefijo `.shop-` |
+| `catalog.js` | Los datos: países, comercios, grupos, categorías y productos |
+| `shop.js` | La lógica: cómo se muestra y se navega la sección |
+| `shop.css` | Los estilos, todos con el prefijo `.shop-` |
 
 Para el trabajo del día a día **solo necesitas editar `catalog.js`**.
 
@@ -27,7 +27,7 @@ Añade un objeto al final de la lista `products`:
   merchantId: 'mi-tienda',       // debe existir en `merchants`
   name: 'Pañales Marca, talla 1',
   description: 'Paquete de 40 unidades.',
-  image: './assets/shop/panales-marca.jpg',   // o null
+  image: './shop/panales-marca.jpg',   // o null
   imageAlt: 'Paquete de pañales Marca talla 1',
   url: 'https://mitienda.cl/panales-marca-t1',
   affiliateUrl: null,            // ver más abajo
@@ -43,7 +43,7 @@ Añade un objeto al final de la lista `products`:
 y aparece "Enlace pendiente".** Es la red de seguridad para que un dato de
 prueba no pueda pasar por real.
 
-Si añades imágenes, crea la carpeta `assets/shop/`, guárdalas ahí
+Si añades imágenes, crea la carpeta `shop/`, guárdalas ahí
 optimizadas (200 px de lado basta) y añádelas a la lista `ASSETS` de `sw.js`
 para que funcionen sin conexión.
 
@@ -138,8 +138,8 @@ no debe tocarse, porque es lo que enlaza los productos.
 Borra estas dos líneas de `index.html`:
 
 ```html
-<script defer src="./assets/catalog.js"></script>
-<script defer src="./assets/shop.js"></script>
+<script defer src="./catalog.js"></script>
+<script defer src="./shop.js"></script>
 ```
 
 La bitácora sigue funcionando exactamente igual; la sección simplemente no

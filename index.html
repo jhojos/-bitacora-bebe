@@ -12,19 +12,19 @@
 <!-- PWA. Todas las rutas son relativas para poder publicar en una subcarpeta
      (GitHub Pages) o en la raíz de un dominio propio sin tocar nada. -->
 <link rel="manifest" href="./manifest.webmanifest" />
-<link rel="icon" href="./icons/icon-192.png" sizes="192x192" type="image/png" />
-<link rel="icon" href="./icons/icon-512.png" sizes="512x512" type="image/png" />
+<link rel="icon" href="./icon-192.png" sizes="192x192" type="image/png" />
+<link rel="icon" href="./icon-512.png" sizes="512x512" type="image/png" />
 
 <!-- iOS / iPadOS: Safari no lee el manifest para la pantalla de inicio. -->
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="Mi Bebé Hoy" />
-<link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png" />
+<link rel="apple-touch-icon" href="./apple-touch-icon-180.png" />
 
-<link rel="stylesheet" href="./assets/app.css" />
+<link rel="stylesheet" href="./app.css" />
 <!-- Capa comercial: hoja de estilos aislada (prefijo .shop-). -->
-<link rel="stylesheet" href="./assets/shop.css" />
+<link rel="stylesheet" href="./shop.css" />
 </head>
 <body>
 
@@ -112,12 +112,12 @@
 <div id="toastSlot" aria-live="polite"></div>
 <div id="printSlot" data-printsheet="1"></div>
 
-<script defer src="./assets/jspdf.umd.min.js"></script>
-<script defer src="./assets/app.js"></script>
+<script defer src="./jspdf.umd.min.js"></script>
+<script defer src="./app.js"></script>
 
 <!-- Capa comercial. Quitar estas dos líneas la desactiva por completo,
      sin afectar a ninguna función de la bitácora. -->
-<script defer src="./assets/catalog.js"></script>
-<script defer src="./assets/shop.js"></script>
+<script defer src="./catalog.js"></script>
+<script defer src="./shop.js"></script>
 </body>
 </html>

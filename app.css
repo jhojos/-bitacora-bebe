@@ -3,15 +3,15 @@
    Los valores (colores, radios, sombras, espaciados, tipografías) son los
    del diseño original y no deben modificarse sin una decisión de diseño.
 
-   Las tipografías se sirven desde ./fonts/ para que la aplicación funcione
+   Las tipografías se sirven desde esta misma carpeta para que funcione
    sin conexión y sin pedir nada a servidores externos.
    ========================================================================= */
 
-@font-face { font-family: 'Instrument Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url(./fonts/instrument-sans-400.woff2) format('woff2'); }
-@font-face { font-family: 'Instrument Sans'; font-style: normal; font-weight: 500; font-display: swap; src: url(./fonts/instrument-sans-500.woff2) format('woff2'); }
-@font-face { font-family: 'Instrument Sans'; font-style: normal; font-weight: 600; font-display: swap; src: url(./fonts/instrument-sans-600.woff2) format('woff2'); }
-@font-face { font-family: 'Instrument Sans'; font-style: normal; font-weight: 700; font-display: swap; src: url(./fonts/instrument-sans-700.woff2) format('woff2'); }
-@font-face { font-family: 'Instrument Serif'; font-style: normal; font-weight: 400; font-display: swap; src: url(./fonts/instrument-serif-400.woff2) format('woff2'); }
+@font-face { font-family: 'Instrument Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url(./instrument-sans-400.woff2) format('woff2'); }
+@font-face { font-family: 'Instrument Sans'; font-style: normal; font-weight: 500; font-display: swap; src: url(./instrument-sans-500.woff2) format('woff2'); }
+@font-face { font-family: 'Instrument Sans'; font-style: normal; font-weight: 600; font-display: swap; src: url(./instrument-sans-600.woff2) format('woff2'); }
+@font-face { font-family: 'Instrument Sans'; font-style: normal; font-weight: 700; font-display: swap; src: url(./instrument-sans-700.woff2) format('woff2'); }
+@font-face { font-family: 'Instrument Serif'; font-style: normal; font-weight: 400; font-display: swap; src: url(./instrument-serif-400.woff2) format('woff2'); }
 
 * { box-sizing: border-box; }
 /* El atributo hidden debe ganar siempre a cualquier display de clase.

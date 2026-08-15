@@ -15,7 +15,7 @@ bitacora-bebe/
 ├── sw.js                      Service worker: caché de archivos para uso sin conexión
 ├── README.md                  Este archivo
 ├── README-catalogo.md         Cómo mantener la sección "Descubre productos"
-├── assets/
+├── 
 │   ├── app.css                Estilos de la bitácora
 │   ├── app.js                 Lógica de la bitácora
 │   ├── shop.css               Estilos de la capa comercial (prefijo .shop-)
@@ -23,7 +23,7 @@ bitacora-bebe/
 │   ├── catalog.js             Datos comerciales (países, tiendas, productos)
 │   ├── jspdf.umd.min.js       Generador de PDF (biblioteca jsPDF 2.5.2, MIT)
 │   └── fonts/                 Instrument Sans e Instrument Serif (SIL OFL)
-└── icons/                     Iconos PROVISIONALES, pendientes de reemplazo
+└──                      Iconos PROVISIONALES, pendientes de reemplazo
 ```
 
 Todos los archivos son necesarios. No hay proceso de compilación: lo que hay
@@ -81,7 +81,7 @@ hazlo siempre que cambies tipografías, iconos o jsPDF, que no se revalidan.
 
 ## Reemplazar los iconos
 
-Los archivos de `icons/` dicen «ICONO PROVISIONAL» a propósito. Cuando exista
+Los archivos de `` dicen «ICONO PROVISIONAL» a propósito. Cuando exista
 la identidad definitiva, sustitúyelos conservando nombres y tamaños:
 
 | Archivo | Tamaño | Para qué |
@@ -111,4 +111,4 @@ No hay que tocar el código.
 
 - jsPDF 2.5.2 — MIT
 - Instrument Sans e Instrument Serif — SIL Open Font License 1.1
-  (texto completo en `assets/fonts/`)
+  (texto completo en `fonts/`)
