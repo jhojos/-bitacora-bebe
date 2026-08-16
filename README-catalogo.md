@@ -11,7 +11,7 @@ Todo lo comercial vive en tres archivos. **Ninguno de ellos toca la bitácora.**
 Para el trabajo del día a día **solo necesitas editar `catalog.js`**.
 
 Después de cualquier cambio, sube el número de versión en la primera línea
-de `sw.js` (`'v3'` → `'v4'`) para que los teléfonos ya instalados reciban el
+de `sw.js` (`'v6'` → `'v7'`) para que los teléfonos ya instalados reciban el
 catálogo nuevo cuanto antes.
 
 ---
@@ -110,6 +110,18 @@ entrada a `groups` con su propio `order`.
 
 Cambiar el nombre visible de una categoría es solo cambiar `name`: el `id`
 no debe tocarse, porque es lo que enlaza los productos.
+
+## Textos en varios idiomas
+
+Los campos visibles del catálogo (nombres de grupos, categorías, productos,
+descripciones, etiquetas y países) admiten un objeto por idioma:
+
+```js
+name: { es: 'Pañales', en: 'Diapers', pt: 'Fraldas' }
+```
+
+También admiten un texto plano, que se muestra igual en los tres idiomas.
+Úsalo para los nombres propios de las tiendas, que no se traducen.
 
 ## Textos de la sección
 

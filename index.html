@@ -34,18 +34,19 @@
     <div>
       <div class="brand-row">
         <span class="brand-dot"></span>
-        <span class="brand-txt">La Bitácora · Los registros diarios de la vida de tu bebé</span>
+        <span id="brandTxt" class="brand-txt"></span>
+        <button id="langBtn" type="button" class="lang-btn" aria-haspopup="dialog"></button>
       </div>
-      <input id="child" class="child-input" aria-label="Nombre del bebé" placeholder="Nombre" autocomplete="off" />
+      <input id="child" class="child-input" data-i18n-attr="aria-label:header.childLabel, placeholder:header.childPlaceholder" autocomplete="off" />
       <div id="dateLabel" class="date-label"></div>
-      <div id="childHint" class="child-hint" hidden>Escribe arriba el nombre del bebé. Aparecerá en tus registros, en el PDF y en lo que compartas.</div>
+      <div id="childHint" class="child-hint" data-i18n="header.childHint" hidden></div>
     </div>
 
     <div class="daynav">
-      <button id="prevDay" class="navbtn" aria-label="Día anterior" type="button">&lsaquo;</button>
-      <input id="datePick" type="date" class="datepick" aria-label="Seleccionar fecha" />
-      <button id="nextDay" class="navbtn" aria-label="Día siguiente" type="button">&rsaquo;</button>
-      <button id="todayBtn" class="todaybtn" type="button">Hoy</button>
+      <button id="prevDay" class="navbtn" data-i18n-attr="aria-label:header.prevDay" type="button">&lsaquo;</button>
+      <input id="datePick" type="date" class="datepick" data-i18n-attr="aria-label:header.pickDate" />
+      <button id="nextDay" class="navbtn" data-i18n-attr="aria-label:header.nextDay" type="button">&rsaquo;</button>
+      <button id="todayBtn" class="todaybtn" type="button" data-i18n="header.today"></button>
     </div>
   </header>
 
@@ -56,14 +57,14 @@
     <div class="col-main">
 
       <section class="card">
-        <div class="eyebrow eyebrow--reg">Registrar</div>
-        <div class="share-desc">Registra fácilmente las tomas, el sueño, los pañales, los medicamentos y los momentos importantes de cada día.</div>
+        <div class="eyebrow eyebrow--reg" data-i18n="record.title"></div>
+        <div class="share-desc" data-i18n="record.desc"></div>
         <div id="regGrid" class="reg-grid"></div>
       </section>
 
       <section class="card card--timeline">
         <div class="tl-head">
-          <div class="eyebrow">Línea temporal del día</div>
+          <div class="eyebrow" data-i18n="timeline.title"></div>
           <div id="tlCount" class="tl-count"></div>
         </div>
         <div id="timeline"></div>
@@ -73,7 +74,7 @@
 
     <div class="col-side">
       <section class="card">
-        <div class="eyebrow eyebrow--sum">Resumen del día</div>
+        <div class="eyebrow eyebrow--sum" data-i18n="summary.title"></div>
         <div id="summary"></div>
       </section>
 
@@ -82,27 +83,27 @@
       <div id="shopMount"></div>
 
       <section class="share-card">
-        <div class="eyebrow" style="margin-bottom:12px">Compartir el registro</div>
-        <div class="share-desc">Genera una versión limpia para enviar a otra persona o para llevar al pediatra.</div>
+        <div class="eyebrow" style="margin-bottom:12px" data-i18n="share.title"></div>
+        <div class="share-desc" data-i18n="share.desc"></div>
         <div class="share-stack">
-          <button id="openShare" class="btn-primary" type="button">Compartir</button>
-          <button id="openPdf" class="btn-secondary" type="button">Descargar PDF</button>
+          <button id="openShare" class="btn-primary" type="button" data-i18n="share.open"></button>
+          <button id="openPdf" class="btn-secondary" type="button" data-i18n="share.pdf"></button>
         </div>
       </section>
 
       <section class="share-card">
-        <div class="eyebrow" style="margin-bottom:12px">Respaldo de los datos</div>
-        <div class="share-desc">Tus registros se guardan en este dispositivo. Haz un respaldo cada cierto tiempo para conservarlos si cambias de teléfono o borras los datos del navegador.</div>
+        <div class="eyebrow" style="margin-bottom:12px" data-i18n="backup.title"></div>
+        <div class="share-desc" data-i18n="backup.desc"></div>
         <div class="share-stack">
-          <button id="exportBackup" class="btn-secondary" type="button">Exportar respaldo</button>
-          <button id="importBackup" class="btn-secondary" type="button">Importar respaldo</button>
+          <button id="exportBackup" class="btn-secondary" type="button" data-i18n="backup.export"></button>
+          <button id="importBackup" class="btn-secondary" type="button" data-i18n="backup.import"></button>
         </div>
         <input id="importFile" type="file" accept="application/json,.json" hidden />
       </section>
 
       <div class="privacy">
-        <p><strong>Tus datos son privados.</strong> Los registros se guardan en este navegador, en este dispositivo, y no se envían a ningún servidor.</p>
-        <p>Eso también significa que nadie más los conserva por ti: si cambias de teléfono, borras los datos del navegador o desinstalas la aplicación, se pierden. Exporta un respaldo cada cierto tiempo.</p>
+        <p data-i18n="privacy.1"></p>
+        <p data-i18n="privacy.2"></p>
       </div>
     </div>
   </div>
@@ -112,6 +113,7 @@
 <div id="toastSlot" aria-live="polite"></div>
 <div id="printSlot" data-printsheet="1"></div>
 
+<script defer src="./i18n.js"></script>
 <script defer src="./jspdf.umd.min.js"></script>
 <script defer src="./app.js"></script>
 

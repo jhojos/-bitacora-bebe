@@ -60,6 +60,21 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .child-input::placeholder { color: oklch(0.66 0.02 60); }
 .child-input:focus-visible { outline: 2px solid oklch(0.45 0.06 45); outline-offset: 4px; border-radius: 4px; }
 
+.lang-btn {
+  margin-left: 2px; min-height: 26px; padding: 0 9px; border-radius: 9px;
+  border: 1px solid oklch(0.88 0.012 70); background: #fff; cursor: pointer;
+  font-size: 11px; letter-spacing: 0.08em; color: oklch(0.45 0.015 60); font-family: inherit;
+}
+@media (hover: hover) { .lang-btn:hover { background: oklch(0.965 0.008 75); } }
+.lang-opts { display: flex; flex-direction: column; gap: 8px; }
+.lang-opt {
+  display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 16px;
+  border: 1px solid oklch(0.89 0.012 70); border-radius: 14px; background: #fff;
+  cursor: pointer; font-size: 16px; font-family: inherit; color: oklch(0.26 0.015 60); text-align: left;
+}
+@media (hover: hover) { .lang-opt:hover { background: oklch(0.97 0.008 75); } }
+.lang-opt.on { border-color: oklch(0.38 0.045 45); background: oklch(0.975 0.012 75); font-weight: 600; }
+
 .date-label { margin-top: 8px; font-size: 17px; color: oklch(0.45 0.015 60); }
 .child-hint { margin-top: 6px; font-size: 13.5px; line-height: 1.5; color: oklch(0.53 0.012 60); max-width: 40ch; text-wrap: pretty; }
 

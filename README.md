@@ -18,6 +18,7 @@ bitacora-bebe/
 ├── 
 │   ├── app.css                Estilos de la bitácora
 │   ├── app.js                 Lógica de la bitácora
+│   ├── i18n.js                Textos en español, inglés y portugués
 │   ├── shop.css               Estilos de la capa comercial (prefijo .shop-)
 │   ├── shop.js                Lógica de la capa comercial
 │   ├── catalog.js             Datos comerciales (países, tiendas, productos)
@@ -71,7 +72,7 @@ Al subir una versión nueva, cambia el número de versión en la primera línea
 de `sw.js`:
 
 ```js
-var CACHE = CACHE_PREFIX + 'v5';   // → 'v6'
+var CACHE = CACHE_PREFIX + 'v6';   // → 'v7'
 ```
 
 El service worker ya revalida `index.html`, `app.css` y `app.js` en segundo
@@ -94,6 +95,20 @@ la identidad definitiva, sustitúyelos conservando nombres y tamaños:
 No hay que tocar el código.
 
 ---
+
+## Idiomas
+
+Todos los textos de la aplicación viven en `i18n.js`, en tres diccionarios
+(`es`, `en`, `pt`). Para corregir una frase basta con editar esa clave; para
+añadir un idioma, se copia un diccionario completo y se añade su código a
+`LANGS`, `LOCALES`, `NAMES` y `FLAGS`.
+
+Lo que escribe la persona —nombres, observaciones, textos de "Otro"— nunca
+pasa por el diccionario y no se traduce jamás.
+
+El idioma se guarda en `mbh.prefs.v1` y el país de compra en `mbh.shop.v1`:
+son dos preferencias distintas y ninguna toca `mbh.v1`, donde viven los
+registros del bebé.
 
 ## Privacidad
 

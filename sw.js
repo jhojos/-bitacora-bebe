@@ -20,7 +20,7 @@
    ========================================================================= */
 
 var CACHE_PREFIX = 'bitacora-bebe-';
-var CACHE = CACHE_PREFIX + 'v5';
+var CACHE = CACHE_PREFIX + 'v6';
 
 /* Rutas relativas a la ubicación de este archivo, para que funcione tanto en
    la raíz de un dominio como en una subcarpeta del tipo usuario.github.io/repositorio/ */
@@ -30,6 +30,7 @@ var ASSETS = [
   './manifest.webmanifest',
   './app.css',
   './app.js',
+  './i18n.js',
   './jspdf.umd.min.js',
   './shop.css',
   './shop.js',
@@ -97,7 +98,7 @@ self.addEventListener('fetch', function (event) {
   // Archivos de la aplicación: se responde con la copia guardada y se
   // refresca en segundo plano, para que la próxima apertura ya use la
   // versión nueva sin depender de que se haya subido el número de CACHE.
-  var revalidate = /\/(index\.html|app\.css|app\.js|shop\.css|shop\.js|catalog\.js|manifest\.webmanifest)$/.test(new URL(req.url).pathname);
+  var revalidate = /\/(index\.html|app\.css|app\.js|i18n\.js|shop\.css|shop\.js|catalog\.js|manifest\.webmanifest)$/.test(new URL(req.url).pathname);
 
   event.respondWith(
     caches.match(req).then(function (hit) {

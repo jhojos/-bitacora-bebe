@@ -15,17 +15,33 @@
 (function () {
   'use strict';
 
-  var SECTION_NAME = 'Descubre productos';
-  var SECTION_DESC = 'Opciones y productos relacionados con el cuidado diario de tu bebé.';
-
+  var I18N = window.MBH_I18N;
   var mount = document.getElementById('shopMount');
   var catalog = window.MBH_CATALOG;
-  if (!mount || !catalog) return;          // sin catálogo, la sección no existe
+  if (!mount || !catalog || !I18N) return;   // sin catálogo, la sección no existe
+
+  var t = I18N.t, tp = I18N.tp, pick = I18N.pick;
+
+  /* Clave propia: el país de compra NO se guarda junto a los datos del bebé
+     ni junto al idioma. Son variables distintas y viven separadas. */
+  var SHOP_KEY = 'mbh.shop.v1';
+
+  function readCountry() {
+    try {
+      var raw = localStorage.getItem(SHOP_KEY);
+      if (!raw) return null;
+      var d = JSON.parse(raw);
+      return (d && typeof d.country === 'string') ? d.country : null;
+    } catch (e) { return null; }
+  }
+  function writeCountry(code) {
+    try { localStorage.setItem(SHOP_KEY, JSON.stringify({ country: code })); } catch (e) {}
+  }
 
   /* Estado propio del módulo. Vive en memoria y no se guarda en ningún
      sitio: la capa comercial no persiste nada en el dispositivo. */
   var view = { level: 'groups', categoryId: null };
-  var country = catalog.defaultCountry || null;
+  var country = readCountry() || catalog.defaultCountry || null;
   var lastFocus = null;
   var slot = null;
 
@@ -38,6 +54,7 @@
       .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
   function byOrder(a, b) { return (a.order || 0) - (b.order || 0); }
+  function label(x) { return pick(x); }
   function isActive(x) { return x && x.active !== false; }
   function inCountry(x) {
     if (!country || !x.countries || !x.countries.length) return true;
@@ -107,9 +124,9 @@
   function renderEntry() {
     mount.innerHTML =
       '<section class="shop-entry">' +
-        '<div class="shop-entry-eyebrow">' + esc(SECTION_NAME) + '</div>' +
-        '<p class="shop-entry-desc">' + esc(SECTION_DESC) + '</p>' +
-        '<button type="button" class="shop-entry-btn" data-shop-open="1">Ver opciones</button>' +
+        '<div class="shop-entry-eyebrow">' + esc(t('shop.name')) + '</div>' +
+        '<p class="shop-entry-desc">' + esc(t('shop.desc')) + '</p>' +
+        '<button type="button" class="shop-entry-btn" data-shop-open="1">' + esc(t('shop.enter')) + '</button>' +
       '</section>';
     mount.querySelector('[data-shop-open]').addEventListener('click', open);
   }
@@ -143,20 +160,20 @@
     var head =
       '<div class="shop-head">' +
         (view.level === 'category'
-          ? '<button type="button" class="shop-back" data-shop-back="1"><span aria-hidden="true">&lsaquo;</span> Todas las categorías</button>'
+          ? '<button type="button" class="shop-back" data-shop-back="1"><span aria-hidden="true">&lsaquo;</span> ' + esc(t('shop.back')) + '</button>'
           : '') +
         '<div class="shop-head-top">' +
           '<div>' +
-            '<h2 class="shop-title" id="shopTitle">' + esc(SECTION_NAME) + '</h2>' +
-            '<p class="shop-desc">' + esc(SECTION_DESC) + '</p>' +
+            '<h2 class="shop-title" id="shopTitle">' + esc(t('shop.name')) + '</h2>' +
+            '<p class="shop-desc">' + esc(t('shop.desc')) + '</p>' +
           '</div>' +
-          '<button type="button" class="shop-close" aria-label="Cerrar" data-shop-close="1">×</button>' +
+          '<button type="button" class="shop-close" aria-label="' + esc(t('form.close')) + '" data-shop-close="1">×</button>' +
         '</div>' +
         (countries.length > 1
           ? '<div class="shop-country">' +
-              '<label for="shopCountry">País</label>' +
+              '<label for="shopCountry">' + esc(t('shop.country')) + '</label>' +
               '<select id="shopCountry">' + countries.map(function (c) {
-                return '<option value="' + esc(c.code) + '"' + (c.code === country ? ' selected' : '') + '>' + esc(c.name) + '</option>';
+                return '<option value="' + esc(c.code) + '"' + (c.code === country ? ' selected' : '') + '>' + esc(label(c.name)) + '</option>';
               }).join('') + '</select>' +
             '</div>'
           : '') +
@@ -181,25 +198,25 @@
 
   function noticeHtml() {
     if (!catalog.demoNotice) return '';
-    return '<div class="shop-notice" role="note"><b>Sección en preparación.</b> ' + esc(catalog.demoNotice) + '</div>';
+    return '<div class="shop-notice" role="note">' + t('shop.demo') + esc(label(catalog.demoNotice)) + '</div>';
   }
 
   function groupsHtml() {
     var groups = (catalog.groups || []).filter(isActive).sort(byOrder);
     if (!groups.length) {
-      return '<div class="shop-empty">Todavía no hay categorías disponibles.</div>';
+      return '<div class="shop-empty">' + esc(t('shop.emptyAll')) + '</div>';
     }
     return groups.map(function (g) {
       var cats = categoriesOf(g.id);
       if (!cats.length) return '';
       return '<section class="shop-group">' +
-        '<div class="shop-group-name">' + esc(g.name) + '</div>' +
-        (g.description ? '<p class="shop-group-desc">' + esc(g.description) + '</p>' : '') +
+        '<div class="shop-group-name">' + esc(label(g.name)) + '</div>' +
+        (g.description ? '<p class="shop-group-desc">' + esc(label(g.description)) + '</p>' : '') +
         '<div class="shop-cats">' + cats.map(function (c) {
           var n = productsOf(c.id).length;
           return '<button type="button" class="shop-cat" data-shop-cat="' + esc(c.id) + '">' +
-            '<span>' + esc(c.name) + '</span>' +
-            '<span class="shop-cat-count">' + (n ? n + (n === 1 ? ' opción' : ' opciones') : 'Sin opciones aún') +
+            '<span>' + esc(label(c.name)) + '</span>' +
+            '<span class="shop-cat-count">' + esc(n ? tp('shop.options', n) : t('shop.noOptions')) +
             ' <span class="shop-cat-arrow" aria-hidden="true">&rsaquo;</span></span>' +
           '</button>';
         }).join('') + '</div>' +
@@ -209,37 +226,38 @@
 
   function categoryHtml() {
     var cat = categoryOf(view.categoryId);
-    if (!cat) return '<div class="shop-empty">Esa categoría ya no está disponible.</div>';
+    if (!cat) return '<div class="shop-empty">' + esc(t('shop.goneCat')) + '</div>';
     var group = groupOf(cat.groupId);
     var items = productsOf(cat.id);
     var body = items.length
       ? '<div class="shop-list">' + items.map(itemHtml).join('') + '</div>'
-      : '<div class="shop-empty">Todavía no hay opciones en esta categoría.<br />Iremos añadiendo tiendas y productos poco a poco.</div>';
-    return '<h3 class="shop-cat-title">' + esc(cat.name) + '</h3>' +
-      '<p class="shop-cat-sub">' + esc(group ? group.name : '') + '</p>' +
+      : '<div class="shop-empty">' + t('shop.emptyCat') + '</div>';
+    return '<h3 class="shop-cat-title">' + esc(label(cat.name)) + '</h3>' +
+      '<p class="shop-cat-sub">' + esc(group ? label(group.name) : '') + '</p>' +
       body;
   }
 
   function itemHtml(p) {
     var m = merchantOf(p);
     var href = outboundUrl(p);
+    var name = label(p.name);
     var thumb = p.image
-      ? '<img src="' + esc(p.image) + '" alt="' + esc(p.imageAlt || p.name) + '" loading="lazy" />'
-      : '<span>Sin imagen</span>';
+      ? '<img src="' + esc(p.image) + '" alt="' + esc(label(p.imageAlt) || name) + '" loading="lazy" />'
+      : '<span>' + esc(t('shop.noImage')) + '</span>';
 
     var cta = href
       ? '<a class="shop-cta" href="' + esc(href) + '" target="_blank" rel="noopener noreferrer nofollow sponsored" ' +
-          'aria-label="Ver ' + esc(p.name) + (m ? ' en ' + esc(m.name) : '') + ' (se abre en otra pestaña)">' +
-          'Ver producto <span class="shop-cta-ext" aria-hidden="true">&#8599;</span></a>'
-      : '<span class="shop-cta shop-cta--off">Enlace pendiente</span>';
+          'aria-label="' + esc(t('shop.viewAria', { name: name, merchant: m ? m.name : '' })) + '">' +
+          esc(t('shop.view')) + ' <span class="shop-cta-ext" aria-hidden="true">&#8599;</span></a>'
+      : '<span class="shop-cta shop-cta--off">' + esc(t('shop.pending')) + '</span>';
 
     return '<article class="shop-item">' +
       '<div class="shop-thumb"' + (p.image ? '' : ' aria-hidden="true"') + '>' + thumb + '</div>' +
       '<div class="shop-item-body">' +
-        (p.badge ? '<span class="shop-badge">' + esc(p.badge) + '</span>' : '') +
-        '<h4 class="shop-name">' + esc(p.name) + '</h4>' +
-        (p.description ? '<p class="shop-item-desc">' + esc(p.description) + '</p>' : '') +
-        '<div class="shop-meta">' + esc(m ? m.name : 'Comercio no indicado') +
+        (p.badge ? '<span class="shop-badge">' + esc(label(p.badge)) + '</span>' : '') +
+        '<h4 class="shop-name">' + esc(name) + '</h4>' +
+        (p.description ? '<p class="shop-item-desc">' + esc(label(p.description)) + '</p>' : '') +
+        '<div class="shop-meta">' + esc(m ? m.name : t('shop.noMerchant')) +
           (p.price ? ' · <span class="shop-price">' + esc(p.price) + '</span>' : '') +
         '</div>' +
         cta +
@@ -249,9 +267,9 @@
 
   function footHtml() {
     var parts = [];
-    if (catalog.disclosure) parts.push('<p>' + esc(catalog.disclosure) + '</p>');
-    parts.push('<p>La compra se realiza siempre en el sitio del comercio. La Bitácora no vende, no cobra, no envía y no gestiona devoluciones ni garantías.</p>');
-    parts.push('<p>Esta sección no usa los registros de tu bebé para elegir qué mostrarte.</p>');
+    if (catalog.disclosure) parts.push('<p>' + esc(label(catalog.disclosure)) + '</p>');
+    parts.push('<p>' + esc(t('shop.foot1', { brand: I18N.BRAND })) + '</p>');
+    parts.push('<p>' + esc(t('shop.foot2')) + '</p>');
     return '<div class="shop-foot">' + parts.join('') + '</div>';
   }
 
@@ -268,7 +286,11 @@
     });
 
     var sel = slot.querySelector('#shopCountry');
-    if (sel) sel.addEventListener('change', function () { country = this.value; render(); });
+    if (sel) sel.addEventListener('change', function () {
+      country = this.value;
+      writeCountry(country);      // se recuerda; el idioma no cambia
+      render();
+    });
 
     slot.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') { close(); return; }
@@ -288,8 +310,14 @@
 
   renderEntry();
 
+  /* Al cambiar el idioma se repinta la sección. El país no se toca. */
+  I18N.onChange(function () {
+    renderEntry();
+    if (slot) render();
+  });
+
   /* Punto de entrada mínimo para pruebas y para abrir la sección desde
      fuera si algún día hiciera falta. No expone datos del bebé. */
-  window.MBH_SHOP = { open: open, close: close, name: SECTION_NAME };
+  window.MBH_SHOP = { open: open, close: close, get country() { return country; } };
 
 })();

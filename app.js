@@ -13,27 +13,56 @@
   /* Nombre visible en los documentos generados (PDF y texto de compartir).
      Cambiar estas dos líneas renombra la aplicación en todas sus salidas;
      el rótulo de la cabecera está en index.html. */
-  var APP_NAME = 'La Bitácora';
-  var APP_TAGLINE = 'Los registros diarios de la vida de tu bebé';
+  var I18N = window.MBH_I18N;
+  var t = I18N.t, tp = I18N.tp;
+  var APP_NAME = I18N.BRAND;                 // la marca no se traduce
 
   /* Identificación del formato de respaldo. La versión permite migrar el
      modelo de datos en el futuro sin romper los archivos ya guardados. */
   var APP_ID = 'bitacora-bebe';
-  var BACKUP_APP_NAME = 'Bitácora Bebé';
+  var BACKUP_APP_NAME = 'Bitácora Bebé';     // etiqueta interna del respaldo, no se muestra
   var BACKUP_VERSION = 1;
   var BACKUP_PREFIX = 'Bitacora_Bebe_Respaldo_';
 
   /* ---------------------------------------------------------------------
      Catálogo de categorías (idéntico al prototipo de diseño)
      --------------------------------------------------------------------- */
+  /* Los identificadores (feed, sleep, breastmilk, fever…) son estables y no
+     dependen del idioma. La letra del distintivo forma parte del diseño y es
+     la misma en los tres idiomas. Las etiquetas visibles salen del
+     diccionario mediante catLabel / catShort / typeLabel. */
   var CATS = {
-    feed:   { label: 'Alimentación', short: 'Alimentación',       color: 'oklch(0.55 0.10 40)',  initial: 'A', types: ['Leche materna', 'Leche extraída', 'Fórmula', 'Alimento', 'Otro'] },
-    sleep:  { label: 'Sueño',        short: 'Sueño',              color: 'oklch(0.45 0.09 265)', initial: 'S', types: null },
-    care:   { label: 'Higiene',      short: 'Higiene y cuidados', color: 'oklch(0.48 0.08 200)', initial: 'H', types: ['Pañal mojado', 'Deposición', 'Baño', 'Otro'] },
-    health: { label: 'Salud',        short: 'Salud',              color: 'oklch(0.5 0.11 15)',   initial: 'L', types: ['Fiebre', 'Tos', 'Diarrea', 'Vómitos', 'Congestión', 'Erupción', 'Dolor', 'Decaimiento', 'Falta de apetito', 'Otro'] },
-    med:    { label: 'Medicación',   short: 'Medicación',         color: 'oklch(0.45 0.10 320)', initial: 'M', types: null },
-    note:   { label: 'Observación',  short: 'Observaciones',      color: 'oklch(0.44 0.07 150)', initial: 'O', types: null }
+    feed:   { color: 'oklch(0.55 0.10 40)',  initial: 'A', types: ['breastmilk', 'expressed', 'formula', 'food', 'other'] },
+    sleep:  { color: 'oklch(0.45 0.09 265)', initial: 'S', types: null },
+    care:   { color: 'oklch(0.48 0.08 200)', initial: 'H', types: ['wetdiaper', 'stool', 'bath', 'other'] },
+    health: { color: 'oklch(0.5 0.11 15)',   initial: 'L', types: ['fever', 'cough', 'diarrhea', 'vomiting', 'congestion', 'rash', 'pain', 'lethargy', 'appetiteloss', 'other'] },
+    med:    { color: 'oklch(0.45 0.10 320)', initial: 'M', types: null },
+    note:   { color: 'oklch(0.44 0.07 150)', initial: 'O', types: null }
   };
+
+  function catLabel(k) { return t('cat.' + k + '.label'); }
+  function catShort(k) { return t('cat.' + k + '.short'); }
+  /* Si llega un valor que el diccionario no conoce (por ejemplo un respaldo
+     editado a mano), se muestra tal cual en vez de perderlo. */
+  function typeLabel(id) { var v = t('type.' + id); return v === 'type.' + id ? id : v; }
+  function unitLabel(id) { var v = t('unit.' + id); return v === 'unit.' + id ? id : v; }
+
+  /* Equivalencias del modelo anterior, que guardaba el texto en español.
+     Se aplican al cargar y al importar, y son idempotentes. */
+  var LEGACY_TYPES = {
+    'Leche materna': 'breastmilk', 'Leche extraída': 'expressed', 'Fórmula': 'formula',
+    'Alimento': 'food', 'Pañal mojado': 'wetdiaper', 'Deposición': 'stool', 'Baño': 'bath',
+    'Fiebre': 'fever', 'Tos': 'cough', 'Diarrea': 'diarrhea', 'Vómitos': 'vomiting',
+    'Congestión': 'congestion', 'Erupción': 'rash', 'Dolor': 'pain',
+    'Decaimiento': 'lethargy', 'Falta de apetito': 'appetiteloss', 'Otro': 'other'
+  };
+  var LEGACY_UNITS = { 'gotas': 'drops', 'comprimido': 'tablet', 'sobre': 'sachet' };
+
+  function migrateEvent(ev) {
+    if (ev.type && LEGACY_TYPES[ev.type]) ev.type = LEGACY_TYPES[ev.type];
+    if (ev.unit && LEGACY_UNITS[ev.unit]) ev.unit = LEGACY_UNITS[ev.unit];
+    return ev;
+  }
   var ORDER = ['feed', 'sleep', 'care', 'health', 'med', 'note'];
   var STORE_KEY = 'mbh.v1';
   var DAY = 86400000;
@@ -66,14 +95,15 @@
     var d = new Date(dayStart(key));
     var o = { weekday: 'long', day: 'numeric', month: 'long' };
     if (withYear) o.year = 'numeric';
-    return d.toLocaleDateString('es-ES', o);
+    return d.toLocaleDateString(I18N.locale, o);
   }
-  function fmtShortDay(key) { return new Date(dayStart(key)).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }); }
+  function fmtShortDay(key) { return new Date(dayStart(key)).toLocaleDateString(I18N.locale, { day: 'numeric', month: 'short' }); }
   function fmtDur(min) {
     var m = Math.max(0, Math.round(min));
-    if (m < 60) return m + ' min';
+    var H = t('dur.h'), MIN = t('dur.min');
+    if (m < 60) return m + ' ' + MIN;
     var h = Math.floor(m / 60), r = m % 60;
-    return r ? h + ' h ' + r + ' min' : h + ' h';
+    return r ? h + ' ' + H + ' ' + r + ' ' + MIN : h + ' ' + H;
   }
   function mk(dateStr, timeStr) {
     if (!dateStr || !timeStr) return null;
@@ -103,14 +133,14 @@
         child = typeof d.child === 'string' ? d.child : '';
       }
     } catch (e) { /* almacenamiento no disponible */ }
-    state.events = events;
+    state.events = events.map(migrateEvent);
     state.child = child;
   }
   function persist() {
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, child: state.child, events: state.events }));
     } catch (e) {
-      toast('No se pudo guardar en este navegador.');
+      toast(t('toast.noStorage'));
     }
   }
 
@@ -123,22 +153,23 @@
     var c = ev.cat, parts = [];
     if (c === 'sleep') {
       var s = fmtTime(ev.at);
-      if (!ev.endAt) return s + ' → en curso · ' + fmtDur((state.now - ev.at) / 60000) + ' hasta ahora';
+      if (!ev.endAt) return t('sleep.toNow', { start: s, dur: fmtDur((state.now - ev.at) / 60000) });
       var cross = keyOf(new Date(ev.at)) !== keyOf(new Date(ev.endAt));
       var e = (cross ? fmtShortDay(keyOf(new Date(ev.endAt))) + ' ' : '') + fmtTime(ev.endAt);
       return s + ' → ' + e + ' · ' + fmtDur((ev.endAt - ev.at) / 60000);
     }
     if (c === 'med') {
-      parts.push(ev.med || 'Medicamento');
-      if (ev.amount) parts.push(ev.amount + (ev.unit ? ' ' + ev.unit : ''));
-      if (ev.reason) parts.push('Motivo: ' + ev.reason);
+      parts.push(ev.med || t('form.med'));
+      if (ev.amount) parts.push(ev.amount + (ev.unit ? ' ' + unitLabel(ev.unit) : ''));
+      if (ev.reason) parts.push(t('pdf.reason', { v: ev.reason }));
       return parts.join(' · ');
     }
-    if (c === 'note') return ev.text || 'Observación';
-    var t = ev.type === 'Otro' ? (ev.other ? ev.other : 'Otro') : ev.type;
-    parts.push(t || '—');
-    if (c === 'feed' && ev.amount) parts.push(ev.amount + (ev.unit ? ' ' + ev.unit : ''));
-    if (c === 'health' && ev.temp) parts.push('Temperatura registrada: ' + ev.temp + ' °C');
+    if (c === 'note') return ev.text || t('form.note');
+    // El texto de "Otro" lo escribió la persona: se muestra tal cual.
+    var lab = ev.type === 'other' ? (ev.other ? ev.other : typeLabel('other')) : typeLabel(ev.type);
+    parts.push(ev.type ? lab : '—');
+    if (c === 'feed' && ev.amount) parts.push(ev.amount + (ev.unit ? ' ' + unitLabel(ev.unit) : ''));
+    if (c === 'health' && ev.temp) parts.push(t('pdf.tempRecorded', { v: ev.temp }));
     return parts.join(' · ');
   }
 
@@ -178,7 +209,7 @@
     return { counts: counts, periods: periods, mins: mins };
   }
 
-  function regLabel(n) { return n === 1 ? '1 registro' : n + ' registros'; }
+  function regLabel(n) { return tp('count.records', n); }
 
   /* Métricas simples del día. Todo se calcula sobre los mismos tramos que ya
      usa el resumen, así que un sueño que cruza medianoche aporta a cada día
@@ -201,7 +232,7 @@
   }
 
   function rowLabel(x) {
-    return (x.cont ? '00:00' : fmtTime(x.ev.at)) + ' · ' + CATS[x.ev.cat].short;
+    return (x.cont ? '00:00' : fmtTime(x.ev.at)) + ' · ' + catShort(x.ev.cat);
   }
   function dot(color, size) {
     var s = size || 10;
@@ -225,7 +256,7 @@
       var c = CATS[k];
       return '<button type="button" class="reg-btn" data-open="' + k + '">' +
         '<span class="cat-badge" style="background:' + c.color + '">' + c.initial + '</span>' +
-        '<span>' + esc(c.label) + '</span></button>';
+        '<span>' + esc(catLabel(k)) + '</span></button>';
     }).join('');
     $('regGrid').innerHTML = html;
   }
@@ -237,7 +268,7 @@
     if (document.activeElement !== dateEl && dateEl.value !== key) dateEl.value = key;
     // La ayuda solo aparece mientras no hay nombre: después estorba.
     $('childHint').hidden = !!state.child.trim();
-    $('dateLabel').textContent = cap(fmtDay(key)) + (key === todayKey ? ' · hoy' : '');
+    $('dateLabel').textContent = cap(fmtDay(key)) + (key === todayKey ? t('header.todaySuffix') : '');
   }
 
   function renderOngoing() {
@@ -247,18 +278,20 @@
     }
     var slot = $('ongoingSlot');
     if (!ev) { if (slot.innerHTML) slot.innerHTML = ''; return; }
-    var detail = 'Desde ' + fmtShortDay(keyOf(new Date(ev.at))) + ' · ' + fmtTime(ev.at) +
-      ' · ' + fmtDur((state.now - ev.at) / 60000) + ' hasta ahora';
+    var detail = t('sleep.ongoingFrom', {
+      date: fmtShortDay(keyOf(new Date(ev.at))), time: fmtTime(ev.at),
+      dur: fmtDur((state.now - ev.at) / 60000)
+    });
     slot.innerHTML =
       '<div class="ongoing">' +
         '<div class="ongoing-left">' +
           '<span class="ongoing-pulse"></span>' +
-          '<div><div class="ongoing-title">Sueño en curso</div>' +
+          '<div><div class="ongoing-title">' + esc(t('sleep.ongoingTitle')) + '</div>' +
           '<div class="ongoing-detail">' + esc(detail) + '</div></div>' +
         '</div>' +
         '<div class="ongoing-actions">' +
-          '<button type="button" class="ongoing-ghost" data-editsleep="' + ev.id + '">Editar horas</button>' +
-          '<button type="button" class="ongoing-solid" data-finishsleep="' + ev.id + '">Finalizar ahora</button>' +
+          '<button type="button" class="ongoing-ghost" data-editsleep="' + ev.id + '">' + esc(t('sleep.editHours')) + '</button>' +
+          '<button type="button" class="ongoing-solid" data-finishsleep="' + ev.id + '">' + esc(t('sleep.finishNow')) + '</button>' +
         '</div>' +
       '</div>';
   }
@@ -268,19 +301,17 @@
     $('tlCount').textContent = rows.length ? regLabel(rows.length) : '';
     if (!rows.length) {
       // En un día pasado, "hoy empieza una nueva página" sería falso.
-      var texto = state.dateKey === keyOf(new Date())
-        ? 'Hoy empieza una nueva página.<br />Registra aquí lo que vaya ocurriendo durante el día.'
-        : 'Todavía no hay registros de este día.<br />Puedes añadir algo que ocurrió hace un rato.';
+      var texto = t(state.dateKey === keyOf(new Date()) ? 'timeline.emptyToday' : 'timeline.emptyOther');
       $('timeline').innerHTML = '<div class="tl-empty">' + texto + '</div>';
       return;
     }
     $('timeline').innerHTML = rows.map(function (x) {
       var c = CATS[x.ev.cat];
-      var catTxt = (x.ev.cat === 'sleep' && !x.ev.endAt) ? c.short + ' · en curso' : c.short;
+      var catTxt = catShort(x.ev.cat) + ((x.ev.cat === 'sleep' && !x.ev.endAt) ? ' · ' + t('timeline.ongoing') : '');
       return '<div class="tl-row">' +
         '<div class="tl-timecol">' +
           '<div class="tl-time">' + (x.cont ? '00:00' : fmtTime(x.ev.at)) + '</div>' +
-          '<div class="tl-sub">' + (x.cont ? 'desde ayer' : '') + '</div>' +
+          '<div class="tl-sub">' + (x.cont ? esc(t('timeline.fromYesterday')) : '') + '</div>' +
         '</div>' +
         '<div class="tl-dotcol"><span style="' + dot(c.color, 11) + '"></span></div>' +
         '<div class="tl-body">' +
@@ -289,8 +320,8 @@
           (x.ev.note ? '<div class="tl-note">' + esc(x.ev.note) + '</div>' : '') +
         '</div>' +
         '<div class="tl-actions">' +
-          '<button type="button" class="icon-btn" aria-label="Editar registro" data-edit="' + x.ev.id + '">Editar</button>' +
-          '<button type="button" class="icon-btn icon-btn--x" aria-label="Eliminar registro" data-del="' + x.ev.id + '">×</button>' +
+          '<button type="button" class="icon-btn" aria-label="' + esc(t('timeline.edit')) + '" data-edit="' + x.ev.id + '">' + esc(t('timeline.edit').split(' ')[0]) + '</button>' +
+          '<button type="button" class="icon-btn icon-btn--x" aria-label="' + esc(t('timeline.delete')) + '" data-del="' + x.ev.id + '">×</button>' +
         '</div>' +
       '</div>';
     }).join('');
@@ -302,12 +333,12 @@
     var isToday = state.dateKey === keyOf(new Date());
 
     var head = m.total
-      ? (isToday ? 'Hoy llevas ' : 'Ese día: ') + '<b>' + esc(regLabel(m.total)) + '</b>' + (isToday ? '.' : '.')
-      : 'Todavía no hay registros de este día.';
+      ? t(isToday ? 'summary.todayCount' : 'summary.dayCount', { n: esc(regLabel(m.total)) })
+      : t('summary.empty');
 
     var items = [
       { k: 'feed', value: regLabel(s.counts.feed) },
-      { k: 'sleep', value: s.periods ? s.periods + (s.periods === 1 ? ' período · ' : ' períodos · ') + fmtDur(s.mins) : '0 períodos' },
+      { k: 'sleep', value: s.periods ? tp('count.periods', s.periods) + ' · ' + fmtDur(s.mins) : tp('count.periods', 0) },
       { k: 'care', value: regLabel(s.counts.care) },
       { k: 'health', value: regLabel(s.counts.health) },
       { k: 'med', value: regLabel(s.counts.med) },
@@ -316,9 +347,9 @@
 
     var extra = [];
     if (m.total) {
-      extra.push({ label: 'Primer registro', value: rowLabel(m.first) });
-      if (m.total > 1) extra.push({ label: 'Último registro', value: rowLabel(m.last) });
-      if (m.longest > 0) extra.push({ label: 'Sueño más largo del día', value: fmtDur(m.longest) });
+      extra.push({ label: t('summary.first'), value: rowLabel(m.first) });
+      if (m.total > 1) extra.push({ label: t('summary.last'), value: rowLabel(m.last) });
+      if (m.longest > 0) extra.push({ label: t('summary.longestSleep'), value: fmtDur(m.longest) });
     }
 
     $('summary').innerHTML =
@@ -327,7 +358,7 @@
         var c = CATS[it.k];
         return '<div class="sum-row">' +
           '<span style="' + dot(c.color, 10) + '"></span>' +
-          '<div class="sum-label">' + esc(c.short) + '</div>' +
+          '<div class="sum-label">' + esc(catShort(it.k)) + '</div>' +
           '<div class="sum-value">' + esc(it.value) + '</div>' +
         '</div>';
       }).join('') +
@@ -338,8 +369,53 @@
           '<div class="sum-value">' + esc(it.value) + '</div>' +
         '</div>';
       }).join('') +
-      (m.total ? '<div class="sum-close">Un día más queda guardado en su historia.</div>' : '');
+      (m.total ? '<div class="sum-close">' + esc(t('summary.close')) + '</div>' : '');
   }
+
+  /* Selector de idioma. Es el mismo diálogo la primera vez y cuando se
+     cambia después: un solo componente, sin pantalla de configuración. */
+  var pendingLangChoice = false;
+
+  function renderLangBtn() {
+    var b = $('langBtn');
+    b.textContent = I18N.lang.toUpperCase();
+    b.setAttribute('aria-label', t('lang.name') + ': ' + I18N.names[I18N.lang]);
+    $('brandTxt').textContent = APP_NAME + ' · ' + t('app.tagline');
+  }
+
+  function openLangDialog(firstTime) {
+    pendingLangChoice = !!firstTime;
+    var opts = I18N.langs.map(function (code) {
+      return '<button type="button" class="lang-opt' + (code === I18N.lang ? ' on' : '') + '" data-lang="' + code + '">' +
+        '<span aria-hidden="true">' + I18N.flags[code] + '</span> ' + esc(I18N.names[code]) + '</button>';
+    }).join('');
+    openModal(
+      '<div class="overlay overlay--confirm">' +
+        '<div class="sheet sheet--confirm" role="dialog" aria-modal="true" data-stop="1">' +
+          '<div class="confirm-title">' + esc(t('lang.title')) + '</div>' +
+          '<div class="confirm-body">' + esc(t('lang.desc')) + '</div>' +
+          '<div class="lang-opts">' + opts + '</div>' +
+        '</div>' +
+      '</div>'
+    );
+    $('modalSlot').querySelector('.lang-opts').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-lang]');
+      if (!b) return;
+      pendingLangChoice = false;
+      var code = b.getAttribute('data-lang');
+      closeModal();
+      I18N.setLang(code);
+    });
+    var cur = $('modalSlot').querySelector('.lang-opt.on') || $('modalSlot').querySelector('.lang-opt');
+    if (cur) cur.focus();
+  }
+
+  /* Cambiar de idioma solo repinta la presentación: ni un dato se toca. */
+  I18N.onChange(function () {
+    renderRegGrid();
+    renderLangBtn();
+    render();
+  });
 
   function render() {
     renderHeader();
@@ -352,7 +428,7 @@
      Formulario de registro
      --------------------------------------------------------------------- */
   function units(cat) {
-    if (cat === 'med') return ['ml', 'mg', 'gotas', 'comprimido', 'sobre'];
+    if (cat === 'med') return ['ml', 'mg', 'drops', 'tablet', 'sachet'];
     return ['ml', 'g', 'oz', 'min'];
   }
 
@@ -391,27 +467,27 @@
   function buildFormModal() {
     var f = state.form, c = CATS[f.cat];
     var us = units(f.cat).slice();
-    if (f.unit && us.indexOf(f.unit) < 0) us.unshift(f.unit);
+    if (f.unit && us.indexOf(f.unit) < 0) us.unshift(f.unit);   // unidad de un respaldo antiguo
 
-    var chips = (c.types || []).map(function (t, i) {
-      return '<button type="button" class="chip" data-chip="' + i + '">' + esc(t) + '</button>';
+    var chips = (c.types || []).map(function (id, i) {
+      return '<button type="button" class="chip" data-chip="' + i + '">' + esc(typeLabel(id)) + '</button>';
     }).join('');
 
     var html =
     '<div class="overlay">' +
-      '<div class="sheet" role="dialog" aria-modal="true" aria-label="' + esc(c.short) + '" data-stop="1">' +
+      '<div class="sheet" role="dialog" aria-modal="true" aria-label="' + esc(catShort(f.cat)) + '" data-stop="1">' +
 
         '<div class="sheet-head">' +
           '<div class="sheet-title-wrap">' +
             '<span style="' + dot(c.color, 12) + '"></span>' +
             '<div class="sheet-title" id="fTitle"></div>' +
           '</div>' +
-          '<button type="button" class="sheet-close" aria-label="Cerrar" data-close="form">×</button>' +
+          '<button type="button" class="sheet-close" aria-label="' + esc(t('form.close')) + '" data-close="form">×</button>' +
         '</div>' +
 
         '<div class="field" id="fSleepNow">' +
           '<button type="button" class="sleepnow" id="fSleepNowBtn"></button>' +
-          '<div class="divider"><span class="line"></span><span>o registra las horas</span><span class="line"></span></div>' +
+          '<div class="divider"><span class="line"></span><span>' + esc(t('form.orHours')) + '</span><span class="line"></span></div>' +
         '</div>' +
 
         '<div class="field" id="fTypes">' +
@@ -420,13 +496,13 @@
         '</div>' +
 
         '<div class="field" id="fOtherWrap">' +
-          '<label class="label" for="fOther"><span id="fOtherLabel"></span> <span class="opt">(opcional)</span></label>' +
-          '<input id="fOther" class="input" placeholder="Escribe lo que ocurrió" autocomplete="off" />' +
+          '<label class="label" for="fOther"><span id="fOtherLabel"></span> <span class="opt">' + esc(t('form.optional')) + '</span></label>' +
+          '<input id="fOther" class="input" placeholder="' + esc(t('form.specifyPlaceholder')) + '" autocomplete="off" />' +
         '</div>' +
 
         '<div class="field" id="fMedWrap">' +
-          '<label class="label" for="fMed">Medicamento</label>' +
-          '<input id="fMed" class="input" placeholder="Nombre tal como lo administraste" autocomplete="off" />' +
+          '<label class="label" for="fMed">' + esc(t('form.med')) + '</label>' +
+          '<input id="fMed" class="input" placeholder="' + esc(t('form.medPlaceholder')) + '" autocomplete="off" />' +
         '</div>' +
 
         '<div class="row2 field">' +
@@ -438,26 +514,26 @@
 
         '<div class="field" id="fSleepEnd">' +
           '<div class="row2" style="margin-bottom:10px">' +
-            '<div class="c13"><label class="label" for="fEndDate">Fecha de término</label>' +
+            '<div class="c13"><label class="label" for="fEndDate">' + esc(t('form.endDate')) + '</label>' +
               '<input id="fEndDate" type="date" class="input input--date" /></div>' +
-            '<div class="c1"><label class="label" for="fEndTime">Hora de término</label>' +
+            '<div class="c1"><label class="label" for="fEndTime">' + esc(t('form.endTime')) + '</label>' +
               '<input id="fEndTime" type="time" class="input input--date" /></div>' +
           '</div>' +
           '<div class="dur-row">' +
-            '<button type="button" class="clear-end" id="fClearEnd">Dejar en curso</button>' +
+            '<button type="button" class="clear-end" id="fClearEnd">' + esc(t('form.leaveOpen')) + '</button>' +
             '<div class="dur-label" id="fDur"></div>' +
           '</div>' +
         '</div>' +
 
         '<div class="row2 field" id="fAmountWrap">' +
-          '<div class="c1"><label class="label" for="fAmount"><span id="fAmountLabel"></span> <span class="opt">(opcional)</span></label>' +
+          '<div class="c1"><label class="label" for="fAmount"><span id="fAmountLabel"></span> <span class="opt">' + esc(t('form.optional')) + '</span></label>' +
             '<input id="fAmount" class="input" inputmode="decimal" placeholder="—" autocomplete="off" /></div>' +
-          '<div class="c1"><label class="label" for="fUnit">Unidad</label>' +
-            '<select id="fUnit" class="select">' + us.map(function (u) { return '<option value="' + esc(u) + '">' + esc(u) + '</option>'; }).join('') + '</select></div>' +
+          '<div class="c1"><label class="label" for="fUnit">' + esc(t('form.unit')) + '</label>' +
+            '<select id="fUnit" class="select">' + us.map(function (u) { return '<option value="' + esc(u) + '">' + esc(unitLabel(u)) + '</option>'; }).join('') + '</select></div>' +
         '</div>' +
 
         '<div class="field" id="fTempWrap">' +
-          '<label class="label" for="fTemp">Temperatura registrada <span class="opt">(opcional)</span></label>' +
+          '<label class="label" for="fTemp">' + esc(t('form.temp')) + ' <span class="opt">' + esc(t('form.optional')) + '</span></label>' +
           '<div class="temp-row">' +
             '<input id="fTemp" class="input" inputmode="decimal" placeholder="38,5" autocomplete="off" />' +
             '<span class="temp-unit">°C</span>' +
@@ -465,24 +541,24 @@
         '</div>' +
 
         '<div class="field" id="fReasonWrap">' +
-          '<label class="label" for="fReason">Motivo registrado <span class="opt">(opcional)</span></label>' +
-          '<input id="fReason" class="input" placeholder="Por ejemplo: fiebre" autocomplete="off" />' +
+          '<label class="label" for="fReason">' + esc(t('form.reason')) + ' <span class="opt">' + esc(t('form.optional')) + '</span></label>' +
+          '<input id="fReason" class="input" placeholder="' + esc(t('form.reasonPlaceholder')) + '" autocomplete="off" />' +
         '</div>' +
 
         '<div class="field" id="fTextWrap">' +
-          '<label class="label" for="fText">Observación</label>' +
-          '<textarea id="fText" class="textarea" rows="3" placeholder="Pasó la tarde con los abuelos."></textarea>' +
+          '<label class="label" for="fText">' + esc(t('form.note')) + '</label>' +
+          '<textarea id="fText" class="textarea" rows="3" placeholder="' + esc(t('form.textPlaceholder')) + '"></textarea>' +
         '</div>' +
 
         '<div class="field" id="fNoteWrap">' +
-          '<label class="label" for="fNote">Observación <span class="opt">(opcional)</span></label>' +
-          '<input id="fNote" class="input" placeholder="Añade un detalle" autocomplete="off" />' +
+          '<label class="label" for="fNote">' + esc(t('form.note')) + ' <span class="opt">' + esc(t('form.optional')) + '</span></label>' +
+          '<input id="fNote" class="input" placeholder="' + esc(t('form.notePlaceholder')) + '" autocomplete="off" />' +
         '</div>' +
 
         '<div class="error" role="alert" id="fError" hidden><b>!</b><span id="fErrorTxt"></span></div>' +
 
         '<div class="actions">' +
-          '<button type="button" class="btn-cancel" data-close="form">Cancelar</button>' +
+          '<button type="button" class="btn-cancel" data-close="form">' + esc(t('form.cancel')) + '</button>' +
           '<button type="button" class="btn-save" id="fSave"></button>' +
         '</div>' +
       '</div>' +
@@ -531,26 +607,26 @@
     if (!f) return;
     var c = CATS[f.cat], types = c.types;
 
-    $('fTitle').textContent = f.id ? 'Editar ' + c.short.toLowerCase() : c.short;
-    $('fSave').textContent = f.id ? 'Guardar cambios' : 'Registrar';
-    $('fDateLabel').textContent = f.cat === 'sleep' ? 'Fecha de inicio' : 'Fecha';
-    $('fTimeLabel').textContent = f.cat === 'sleep' ? 'Hora de inicio' : 'Hora';
-    $('fTypeLabel').textContent = f.cat === 'health' ? 'Acontecimiento' : 'Tipo';
-    $('fOtherLabel').textContent = f.cat === 'health' ? 'Especificar acontecimiento' : 'Especificar';
-    $('fAmountLabel').textContent = f.cat === 'med' ? 'Cantidad administrada' : 'Cantidad';
+    $('fTitle').textContent = f.id ? t('form.edit', { cat: catShort(f.cat).toLowerCase() }) : catShort(f.cat);
+    $('fSave').textContent = t(f.id ? 'form.saveEdit' : 'form.save');
+    $('fDateLabel').textContent = t(f.cat === 'sleep' ? 'form.startDate' : 'form.date');
+    $('fTimeLabel').textContent = t(f.cat === 'sleep' ? 'form.startTime' : 'form.time');
+    $('fTypeLabel').textContent = t(f.cat === 'health' ? 'form.event' : 'form.type');
+    $('fOtherLabel').textContent = t(f.cat === 'health' ? 'form.specifyEvent' : 'form.specify');
+    $('fAmountLabel').textContent = t(f.cat === 'med' ? 'form.amountGiven' : 'form.amount');
 
     show('fSleepNow', f.cat === 'sleep' && !f.id);
     show('fTypes', !!types);
-    show('fOtherWrap', !!types && f.type === 'Otro');
+    show('fOtherWrap', !!types && f.type === 'other');
     show('fMedWrap', f.cat === 'med');
     show('fSleepEnd', f.cat === 'sleep');
     show('fAmountWrap', f.cat === 'feed' || f.cat === 'med');
-    show('fTempWrap', f.cat === 'health' && f.type === 'Fiebre');
+    show('fTempWrap', f.cat === 'health' && f.type === 'fever');
     show('fReasonWrap', f.cat === 'med');
     show('fTextWrap', f.cat === 'note');
     show('fNoteWrap', f.cat !== 'note');
 
-    if (f.cat === 'sleep' && !f.id) $('fSleepNowBtn').textContent = 'Se durmió ahora · ' + fmtTime(state.now);
+    if (f.cat === 'sleep' && !f.id) $('fSleepNowBtn').textContent = t('form.sleepNow', { time: fmtTime(state.now) });
 
     if (types) {
       var chips = $('fChips').querySelectorAll('[data-chip]');
@@ -571,8 +647,8 @@
     if (f.cat === 'sleep') {
       var a = mk(f.date, f.time), b = mk(f.endDate, f.endTime);
       $('fDur').textContent = (a && b && b > a)
-        ? 'Duración: ' + fmtDur((b - a) / 60000)
-        : 'Sin hora de término: quedará en curso';
+        ? t('form.duration', { dur: fmtDur((b - a) / 60000) })
+        : t('form.willStayOpen');
     }
 
     show('fError', !!f.error);
@@ -582,30 +658,30 @@
   function save() {
     var f = state.form;
     var at = mk(f.date, f.time);
-    if (!at) return setF('error', 'Indica cuándo ocurrió.');
+    if (!at) return setF('error', t('err.when'));
 
     var endAt = null;
     if (f.cat === 'sleep') {
       var hasD = !!f.endDate, hasT = !!f.endTime;
-      if (hasD !== hasT) return setF('error', 'Completa la fecha y la hora de término, o deja el sueño en curso.');
+      if (hasD !== hasT) return setF('error', t('err.endIncomplete'));
       if (hasD && hasT) {
         endAt = mk(f.endDate, f.endTime);
-        if (!endAt) return setF('error', 'La hora de término no es válida.');
-        if (endAt <= at) return setF('error', 'La hora de término debe ser posterior al inicio.');
+        if (!endAt) return setF('error', t('err.endInvalid'));
+        if (endAt <= at) return setF('error', t('err.endBefore'));
       }
     }
-    if (f.cat === 'health' && !f.type) return setF('error', 'Elige el acontecimiento que quieres registrar.');
-    if (f.cat === 'med' && !f.med.trim()) return setF('error', 'Indica el medicamento que administraste.');
-    if (f.cat === 'note' && !f.text.trim()) return setF('error', 'Escribe la observación.');
-    if ((f.cat === 'feed' || f.cat === 'care') && !f.type) return setF('error', 'Elige el tipo de registro.');
+    if (f.cat === 'health' && !f.type) return setF('error', t('err.pickEvent'));
+    if (f.cat === 'med' && !f.med.trim()) return setF('error', t('err.pickMed'));
+    if (f.cat === 'note' && !f.text.trim()) return setF('error', t('err.writeNote'));
+    if ((f.cat === 'feed' || f.cat === 'care') && !f.type) return setF('error', t('err.pickType'));
 
     var data = {
       cat: f.cat, at: at, endAt: endAt,
       type: f.type || null,
-      other: (f.type === 'Otro' && f.other) ? f.other : null,
+      other: (f.type === 'other' && f.other) ? f.other : null,
       amount: f.amount ? f.amount : null,
       unit: f.amount ? f.unit : null,
-      temp: (f.cat === 'health' && f.type === 'Fiebre' && f.temp) ? f.temp : null,
+      temp: (f.cat === 'health' && f.type === 'fever' && f.temp) ? f.temp : null,
       med: f.med ? f.med : null,
       reason: f.reason ? f.reason : null,
       note: f.note ? f.note : null,
@@ -633,9 +709,9 @@
     persist();
     render();
 
-    if (f.cat === 'sleep' && endAt) toast('Sueño registrado · ' + fmtDur((endAt - at) / 60000));
-    else if (f.cat === 'sleep') toast('Sueño en curso desde ' + fmtTime(at));
-    else toast(f.id ? 'Registro actualizado' : 'Registrado · ' + CATS[f.cat].label);
+    if (f.cat === 'sleep' && endAt) toast(t('toast.sleepSaved', { dur: fmtDur((endAt - at) / 60000) }));
+    else if (f.cat === 'sleep') toast(t('toast.sleepOpen', { time: fmtTime(at) }));
+    else toast(f.id ? t('toast.updated') : t('toast.saved', { cat: catLabel(f.cat) }));
   }
 
   function sleepNow() {
@@ -646,7 +722,7 @@
     closeModal();
     persist();
     render();
-    toast('Sueño iniciado · ' + fmtTime(at));
+    toast(t('toast.sleepStarted', { time: fmtTime(at) }));
   }
 
   function finishSleep(id) {
@@ -658,7 +734,7 @@
     });
     persist();
     render();
-    toast('Sueño registrado · ' + fmtDur(dur));
+    toast(t('toast.sleepSaved', { dur: fmtDur(dur) }));
   }
 
   /* ---------------------------------------------------------------------
@@ -666,9 +742,9 @@
      --------------------------------------------------------------------- */
   function openConfirm(opts) {
     var actions = opts.okOnly
-      ? '<button type="button" class="btn-keep" data-close="1">' + esc(opts.okLabel || 'Entendido') + '</button>'
-      : '<button type="button" class="btn-keep" data-close="1">' + esc(opts.cancelLabel || 'Cancelar') + '</button>' +
-        '<button type="button" class="btn-delete" id="cOk">' + esc(opts.okLabel || 'Aceptar') + '</button>';
+      ? '<button type="button" class="btn-keep" data-close="1">' + esc(opts.okLabel || t('dialog.ok')) + '</button>'
+      : '<button type="button" class="btn-keep" data-close="1">' + esc(opts.cancelLabel || t('form.cancel')) + '</button>' +
+        '<button type="button" class="btn-delete" id="cOk">' + esc(opts.okLabel || t('dialog.ok')) + '</button>';
     openModal(
       '<div class="overlay overlay--confirm">' +
         '<div class="sheet sheet--confirm" role="dialog" aria-modal="true" data-stop="1">' +
@@ -700,17 +776,17 @@
     for (var i = 0; i < state.events.length; i++) if (state.events[i].id === id) ev = state.events[i];
     if (!ev) return;
     var cont = ev.cat === 'sleep' && ev.at < dayStart(state.dateKey);
-    var label = (cont ? '' : fmtTime(ev.at) + ' · ') + CATS[ev.cat].short + ' — ' + detailOf(ev);
+    var label = (cont ? '' : fmtTime(ev.at) + ' · ') + catShort(ev.cat) + ' — ' + detailOf(ev);
     openConfirm({
-      title: '¿Eliminar este registro?',
+      title: t('del.title'),
       lines: [label],
-      cancelLabel: 'Conservar',
-      okLabel: 'Eliminar',
+      cancelLabel: t('del.keep'),
+      okLabel: t('del.confirm'),
       onOk: function () {
         state.events = state.events.filter(function (e) { return e.id !== id; });
         persist();
         render();
-        toast('Registro eliminado');
+        toast(t('toast.deleted'));
       }
     });
   }
@@ -739,20 +815,20 @@
      Nunca se muestra una categoría vacía ni se interpreta nada. */
   function summaryLines(s) {
     var L = [];
-    if (s.counts.feed) L.push(s.counts.feed + (s.counts.feed === 1 ? ' alimentación' : ' alimentaciones'));
-    if (s.periods) L.push(s.periods + (s.periods === 1 ? ' período de sueño · ' : ' períodos de sueño · ') + fmtDur(s.mins));
-    if (s.counts.care) L.push(s.counts.care + (s.counts.care === 1 ? ' registro de higiene' : ' registros de higiene'));
-    if (s.counts.health) L.push(s.counts.health + (s.counts.health === 1 ? ' registro de salud' : ' registros de salud'));
-    if (s.counts.med) L.push(s.counts.med + (s.counts.med === 1 ? ' registro de medicación' : ' registros de medicación'));
-    if (s.counts.note) L.push(s.counts.note + (s.counts.note === 1 ? ' observación' : ' observaciones'));
+    if (s.counts.feed) L.push(tp('txt.feedings', s.counts.feed));
+    if (s.periods) L.push(tp('txt.sleeps', s.periods, { dur: fmtDur(s.mins) }));
+    if (s.counts.care) L.push(tp('txt.hygiene', s.counts.care));
+    if (s.counts.health) L.push(tp('txt.health', s.counts.health));
+    if (s.counts.med) L.push(tp('txt.meds', s.counts.med));
+    if (s.counts.note) L.push(tp('txt.notes', s.counts.note));
     return L;
   }
 
   function eventLine(x) {
     var time = x.cont ? '00:00' : fmtTime(x.ev.at);
-    var pre = x.cont ? 'viene de ayer · ' : '';
+    var pre = x.cont ? t('timeline.fromYesterday') + ' · ' : '';
     var note = (x.ev.note && x.ev.cat !== 'note') ? ' (' + x.ev.note + ')' : '';
-    return time + ' — ' + CATS[x.ev.cat].short + ': ' + pre + detailOf(x.ev) + note;
+    return time + ' — ' + catShort(x.ev.cat) + ': ' + pre + detailOf(x.ev) + note;
   }
 
   function shareText(share) {
@@ -760,28 +836,28 @@
     var oneDay = r.keys.length === 1;
     var L = [APP_NAME, ''];
     if (state.child) L.push(state.child);
-    L.push(oneDay ? 'Registro del ' + fmtDay(r.from, true) : 'Registro del ' + periodLabel(r));
+    L.push(t('txt.recordOf', { date: oneDay ? fmtDay(r.from, true) : periodLabel(r) }));
     L.push('');
 
     r.keys.forEach(function (key) {
       var rows = dayRows(key), sum = summaryLines(daySummary(key));
       if (!oneDay) L.push(cap(fmtDay(key)));
       if (!rows.length) {
-        L.push(oneDay ? 'Sin registros.' : '  Sin registros.');
+        L.push((oneDay ? '' : '  ') + t('txt.noRecords'));
         L.push('');
         return;
       }
       if (sum.length) {
-        L.push('Resumen');
-        sum.forEach(function (t) { L.push(t); });
+        L.push(t('txt.summary'));
+        sum.forEach(function (line) { L.push(line); });
         L.push('');
       }
-      L.push('Línea del día');
+      L.push(t('txt.dayLine'));
       rows.forEach(function (x) { L.push(eventLine(x)); });
       L.push('');
     });
 
-    L.push('Registro introducido por el cuidador. No contiene recomendaciones.');
+    L.push(t('txt.disclaimer'));
     return L.join('\n');
   }
 
@@ -798,8 +874,8 @@
       var rows = dayRows(key).map(function (x) {
         return {
           time: x.cont ? '00:00' : fmtTime(x.ev.at),
-          cat: CATS[x.ev.cat].short,
-          detail: (x.cont ? 'Sueño que continúa · ' : '') + detailOf(x.ev) +
+          cat: catShort(x.ev.cat),
+          detail: (x.cont ? t('sleep.continues') + ' · ' : '') + detailOf(x.ev) +
                   (x.ev.note && x.ev.cat !== 'note' ? ' — ' + x.ev.note : '')
         };
       });
@@ -825,21 +901,21 @@
       });
 
     var summary = [
-      { label: 'Alimentación', value: regLabel(tot.feed) },
-      { label: 'Sueño', value: periods + (periods === 1 ? ' período · ' : ' períodos · ') + fmtDur(mins) },
-      { label: 'Higiene y cuidados', value: regLabel(tot.care) },
-      { label: 'Salud', value: regLabel(tot.health) },
-      { label: 'Medicación', value: regLabel(tot.med) },
-      { label: 'Observaciones', value: regLabel(tot.note) }
+      { label: catShort('feed'), value: regLabel(tot.feed) },
+      { label: catShort('sleep'), value: tp('count.periods', periods) + ' · ' + fmtDur(mins) },
+      { label: catShort('care'), value: regLabel(tot.care) },
+      { label: catShort('health'), value: regLabel(tot.health) },
+      { label: catShort('med'), value: regLabel(tot.med) },
+      { label: catShort('note'), value: regLabel(tot.note) }
     ];
 
     return {
-      child: state.child || 'Sin nombre',
+      child: state.child || t('app.noName'),
       period: cap(periodLabel(r)),
-      generated: new Date().toLocaleString('es-ES', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      generated: new Date().toLocaleString(I18N.locale, { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
       summary: summary,
       cats: ORDER.filter(function (k) { return catRows[k].length; })
-                 .map(function (k) { return { label: CATS[k].short, rows: catRows[k] }; }),
+                 .map(function (k) { return { label: catShort(k), rows: catRows[k] }; }),
       days: days.filter(function (d) { return d.rows.length; })
     };
   }
@@ -900,18 +976,18 @@
     txt(data.child, M, y + 13.5);
     font('helvetica', 'normal', 8.6, BODY);
     txt(data.period, PW - M, y + 6.5, { align: 'right' });
-    txt('Generado: ' + data.generated, PW - M, y + 11, { align: 'right' });
+    txt(t('pdf.generated', { when: data.generated }), PW - M, y + 11, { align: 'right' });
     y += 17;
     line(M, y, PW - M, y, INK, 0.6);
     y += 5;
     font('helvetica', 'normal', 9, MUTED);
-    txt('Todo lo que pasó hoy, queda guardado aquí.', M, y);
+    txt(t('pdf.opening'), M, y);
     y += 8;
 
     /* --- resumen --- */
     font('helvetica', 'normal', 8.2, MUTED);
     doc.setCharSpace(0.4);
-    txt('RESUMEN DEL PERÍODO', M, y);
+    txt(t('pdf.summary').toUpperCase(), M, y);
     doc.setCharSpace(0);
     y += 4.5;
     data.summary.forEach(function (s) {
@@ -938,15 +1014,22 @@
       y += 5;
     }
 
+    /* El ancho de la columna de fecha se mide sobre los textos reales, para
+       que valga igual en español, inglés o portugués. */
     font('helvetica', 'normal', 9, BODY);
-    var WHEN_W = Math.max(26, doc.getTextWidth('30 sept · 00:00') + 4);
+    var WHEN_W = 26;
+    data.cats.forEach(function (c) {
+      c.rows.forEach(function (rw) {
+        WHEN_W = Math.max(WHEN_W, doc.getTextWidth(pdfSafe(rw.when)) + 6);
+      });
+    });
     data.cats.forEach(function (c) {
       section(c.label);
       c.rows.forEach(function (r) {
         font('helvetica', 'normal', 9.4, INK);
         var lines = doc.splitTextToSize(pdfSafe(r.detail), CW - WHEN_W);
         var h = lines.length * 4.4 + 2.2;
-        if (y + h > BOTTOM) { newPage(); section(c.label + ' (continuación)'); }
+        if (y + h > BOTTOM) { newPage(); section(t('pdf.continued', { label: c.label })); }
         font('helvetica', 'normal', 9, BODY);
         txt(r.when, M, y + 3.2);
         font('helvetica', 'normal', 9.4, INK);
@@ -961,10 +1044,10 @@
     /* --- línea temporal --- */
     if (data.days.length) {
       if (y > M + 40) newPage();
-      section('Línea temporal');
+      section(t('pdf.timeline'));
       font('helvetica', 'normal', 9.2, MUTED);
       var T_W = doc.getTextWidth('00:00') + 3.5;
-      var C_W = 4.5 + ORDER.reduce(function (m, k) { return Math.max(m, doc.getTextWidth(CATS[k].short)); }, 0);
+      var C_W = 4.5 + ORDER.reduce(function (m, k) { return Math.max(m, doc.getTextWidth(pdfSafe(catShort(k)))); }, 0);
       data.days.forEach(function (d) {
         need(14);
         font('helvetica', 'bold', 10.5, INK);
@@ -977,7 +1060,7 @@
           if (y + h > BOTTOM) {
             newPage();
             font('helvetica', 'bold', 10.5, INK);
-            txt(d.label + ' (continuación)', M, y + 3.4);
+            txt(t('pdf.continued', { label: d.label }), M, y + 3.4);
             y += 6.4;
           }
           font('helvetica', 'normal', 9.2, INK);
@@ -1000,26 +1083,24 @@
     line(M, y, PW - M, y, RULE, 0.2);
     y += 4.5;
     font('helvetica', 'normal', 9, BODY);
-    txt('Una página más de su historia.', M, y);
+    txt(t('pdf.closing'), M, y);
     y += 5;
     font('helvetica', 'normal', 8, MUTED);
-    doc.text(doc.splitTextToSize(pdfSafe(
-      'Documento generado a partir de los datos introducidos por el cuidador. Contiene información registrada, no recomendaciones.'),
-      CW), M, y);
+    doc.text(doc.splitTextToSize(pdfSafe(t('pdf.legal')), CW), M, y);
 
     /* --- pies de página --- */
     var total = doc.getNumberOfPages();
     for (var p = 1; p <= total; p++) {
       doc.setPage(p);
       font('helvetica', 'normal', 7.6, MUTED);
-      txt(APP_NAME + ' · Registro diario de ' + data.child, M, PH - 8);
+      txt(t('pdf.footer', { brand: APP_NAME, name: data.child }), M, PH - 8);
       txt(p + ' / ' + total, PW - M, PH - 8, { align: 'right' });
     }
     return doc;
   }
 
   function pdfName(data) {
-    var s = (APP_NAME + ' - ' + data.child + ' - ' + data.period)
+    var s = (APP_NAME + ' - ' + t('pdf.file') + ' - ' + data.child + ' - ' + data.period)
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/[^\w\s.\-—]/g, '').replace(/\s+/g, ' ').trim();
     return s.slice(0, 90) + '.pdf';
@@ -1036,7 +1117,7 @@
     try {
       var r = pdfBlob(share);
       r.doc.save(r.name);
-      toast('PDF generado');
+      toast(t('toast.pdf'));
     } catch (e) {
       fallbackPrint(share);
     }
@@ -1051,11 +1132,11 @@
   function renderPrintSheet(d) {
     var h = '<div class="printsheet">' +
       '<div class="ps-head"><div>' +
-        '<div class="ps-kicker">' + esc(APP_NAME + ' · ' + APP_TAGLINE) + '</div>' +
+        '<div class="ps-kicker">' + esc(APP_NAME + ' · ' + t('app.tagline')) + '</div>' +
         '<div class="ps-name">' + esc(d.child) + '</div></div>' +
         '<div class="ps-meta"><div>' + esc(d.period) + '</div><div>Generado: ' + esc(d.generated) + '</div></div>' +
       '</div>' +
-      '<div class="ps-h2">Resumen del período</div>' +
+      '<div class="ps-h2">' + esc(t('pdf.summary')) + '</div>' +
       '<table class="ps-table ps-sum">' + d.summary.map(function (s) {
         return '<tr><td>' + esc(s.label) + '</td><td>' + esc(s.value) + '</td></tr>';
       }).join('') + '</table>' +
@@ -1065,13 +1146,13 @@
             return '<tr><td class="when">' + esc(r.when) + '</td><td>' + esc(r.detail) + '</td></tr>';
           }).join('') + '</table></div>';
       }).join('') +
-      (d.days.length ? '<div class="ps-page"><div class="ps-h3">Línea temporal</div>' + d.days.map(function (day) {
+      (d.days.length ? '<div class="ps-page"><div class="ps-h3">' + esc(t('pdf.timeline')) + '</div>' + d.days.map(function (day) {
         return '<div class="ps-day"><div class="ps-day-label">' + esc(day.label) + '</div><table class="ps-table">' +
           day.rows.map(function (r) {
             return '<tr><td class="t">' + esc(r.time) + '</td><td class="c">' + esc(r.cat) + '</td><td>' + esc(r.detail) + '</td></tr>';
           }).join('') + '</table></div>';
       }).join('') + '</div>' : '') +
-      '<div class="ps-foot">Documento generado a partir de los datos introducidos por el cuidador. Contiene información registrada, no recomendaciones.</div>' +
+      '<div class="ps-foot">' + esc(t('pdf.legal')) + '</div>' +
     '</div>';
     $('printSlot').innerHTML = h;
   }
@@ -1079,48 +1160,49 @@
   /* ---------------------------------------------------------------------
      Compartir
      --------------------------------------------------------------------- */
-  var SHARE_OPTS = [['hoy', 'Hoy'], ['3', 'Últimos 3 días'], ['7', 'Últimos 7 días'], ['custom', 'Rango personalizado']];
+  var SHARE_RANGES = ['hoy', '3', '7', 'custom'];
+  var SHARE_KEYS = ['share.today', 'share.last3', 'share.last7', 'share.custom'];
 
   function openShare() {
     state.share = { range: 'hoy', from: shiftKey(state.dateKey, -6), to: state.dateKey };
-    var chips = SHARE_OPTS.map(function (o, i) {
-      return '<button type="button" class="chip" data-range="' + i + '">' + esc(o[1]) + '</button>';
+    var chips = SHARE_KEYS.map(function (k, i) {
+      return '<button type="button" class="chip" data-range="' + i + '">' + esc(t(k)) + '</button>';
     }).join('');
     openModal(
       '<div class="overlay">' +
         '<div class="sheet sheet--share" role="dialog" aria-modal="true" aria-label="Compartir el registro" data-stop="1">' +
           '<div class="sheet-head">' +
-            '<div class="sheet-title">Compartir el registro</div>' +
-            '<button type="button" class="sheet-close" aria-label="Cerrar" data-close="share">×</button>' +
+            '<div class="sheet-title">' + esc(t('share.title')) + '</div>' +
+            '<button type="button" class="sheet-close" aria-label="' + esc(t('form.close')) + '" data-close="share">×</button>' +
           '</div>' +
-          '<div class="label label--chips">Período</div>' +
+          '<div class="label label--chips">' + esc(t('share.period')) + '</div>' +
           '<div class="chips" id="sChips" style="margin-bottom:16px">' + chips + '</div>' +
           '<div class="share-dates" id="sCustom">' +
-            '<div><label for="sFrom">Desde</label><input id="sFrom" type="date" /></div>' +
-            '<div><label for="sTo">Hasta</label><input id="sTo" type="date" /></div>' +
+            '<div><label for="sFrom">' + esc(t('share.from')) + '</label><input id="sFrom" type="date" /></div>' +
+            '<div><label for="sTo">' + esc(t('share.to')) + '</label><input id="sTo" type="date" /></div>' +
           '</div>' +
           '<div class="share-preview"><pre id="sPreview"></pre></div>' +
           '<div class="share-grid">' +
-            '<button type="button" class="btn-primary" id="sShare">Compartir</button>' +
-            '<button type="button" class="btn-secondary" id="sWa">WhatsApp</button>' +
-            '<button type="button" class="btn-secondary" id="sCopy">Copiar texto</button>' +
-            '<button type="button" class="btn-secondary" id="sPdf">Descargar PDF</button>' +
+            '<button type="button" class="btn-primary" id="sShare">' + esc(t('share.open')) + '</button>' +
+            '<button type="button" class="btn-secondary" id="sWa">' + esc(t('share.whatsapp')) + '</button>' +
+            '<button type="button" class="btn-secondary" id="sCopy">' + esc(t('share.copy')) + '</button>' +
+            '<button type="button" class="btn-secondary" id="sPdf">' + esc(t('share.pdf')) + '</button>' +
           '</div>' +
-          '<div class="share-foot">Al compartir se abre el menú de tu dispositivo o WhatsApp; el envío lo confirmas tú.</div>' +
+          '<div class="share-foot">' + esc(t('share.foot')) + '</div>' +
         '</div>' +
       '</div>'
     );
     $('sChips').addEventListener('click', function (e) {
       var b = e.target.closest('[data-range]');
       if (!b) return;
-      state.share.range = SHARE_OPTS[+b.getAttribute('data-range')][0];
+      state.share.range = SHARE_RANGES[+b.getAttribute('data-range')];
       syncShare();
     });
     $('sFrom').addEventListener('change', function () { state.share.from = this.value; syncShare(); });
     $('sTo').addEventListener('change', function () { state.share.to = this.value; syncShare(); });
     $('sShare').addEventListener('click', doShare);
     $('sWa').addEventListener('click', doWhatsapp);
-    $('sCopy').addEventListener('click', function () { copy(shareText(state.share)); toast('Texto copiado'); });
+    $('sCopy').addEventListener('click', function () { copy(shareText(state.share)); toast(t('toast.copied')); });
     $('sPdf').addEventListener('click', function () { downloadPdf(state.share); });
     syncShare();
     $('sChips').querySelector('.chip').focus();
@@ -1130,7 +1212,7 @@
     var s = state.share;
     var chips = $('sChips').querySelectorAll('[data-range]');
     for (var i = 0; i < chips.length; i++) {
-      var on = SHARE_OPTS[i][0] === s.range;
+      var on = SHARE_RANGES[i] === s.range;
       chips[i].classList.toggle('on', on);
       chips[i].setAttribute('aria-pressed', on ? 'true' : 'false');
       chips[i].style.background = on ? 'oklch(0.38 0.045 45)' : '';
@@ -1146,7 +1228,7 @@
      lo confirma la persona en el menú del sistema. */
   function doShare() {
     var text = shareText(state.share);
-    var title = APP_NAME + ' — ' + (state.child || 'Registro');
+    var title = APP_NAME + ' — ' + (state.child || t('pdf.file'));
     var file = null;
     if (pdfAvailable()) {
       try {
@@ -1166,13 +1248,13 @@
       return;
     }
     copy(text);
-    toast('Tu navegador no ofrece el menú de compartir. Texto copiado.');
+    toast(t('toast.noShare'));
   }
 
   function doWhatsapp() {
     var text = shareText(state.share);
     try { window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank'); } catch (e) {}
-    toast('Abriendo WhatsApp. Elige el destinatario y confirma el envío.');
+    toast(t('toast.whatsapp'));
   }
 
   function copy(text) {
@@ -1218,7 +1300,7 @@
     try {
       json = JSON.stringify(backupObject(), null, 2);
     } catch (e) {
-      return alertDialog('No se pudo crear el respaldo', ['Los registros no se pudieron convertir en archivo. No se ha modificado ningún dato.']);
+      return alertDialog(t('backup.errMakeTitle'), [t('backup.errMake')]);
     }
     try {
       var blob = new Blob([json], { type: 'application/json' });
@@ -1231,9 +1313,9 @@
       a.click();
       document.body.removeChild(a);
       setTimeout(function () { URL.revokeObjectURL(url); }, 5000);
-      toast('Respaldo exportado · ' + regLabel(state.events.length));
+      toast(t('toast.exported', { n: regLabel(state.events.length) }));
     } catch (e) {
-      alertDialog('No se pudo descargar el respaldo', ['Tu navegador bloqueó la descarga del archivo.']);
+      alertDialog(t('backup.errDownTitle'), [t('backup.errDown')]);
     }
   }
 
@@ -1271,7 +1353,8 @@
     ev.createdAt = (isFinite(c) && c > 0) ? c : at;
     var u = Number(raw.updatedAt);
     if (isFinite(u) && u > 0) ev.updatedAt = u;
-    return ev;
+    // Un respaldo creado con la versión anterior guarda el tipo en español.
+    return migrateEvent(ev);
   }
 
   function parseBackup(text) {
@@ -1279,24 +1362,24 @@
     try {
       obj = JSON.parse(text);
     } catch (e) {
-      return { ok: false, reason: 'El archivo no es un JSON válido.' };
+      return { ok: false, reason: t('backup.errNotJson') };
     }
     if (!obj || typeof obj !== 'object' || Array.isArray(obj)) {
-      return { ok: false, reason: 'El archivo no tiene la estructura de un respaldo.' };
+      return { ok: false, reason: t('backup.errShape') };
     }
     if (obj.format !== 'backup' || obj.app !== APP_ID) {
-      return { ok: false, reason: 'El archivo no es un respaldo de esta aplicación.' };
+      return { ok: false, reason: t('backup.errApp') };
     }
     var v = Number(obj.version);
     if (!isFinite(v) || v < 1) {
-      return { ok: false, reason: 'El respaldo no indica una versión de formato válida.' };
+      return { ok: false, reason: t('backup.errVersion') };
     }
     if (v > BACKUP_VERSION) {
-      return { ok: false, reason: 'El respaldo se creó con una versión más reciente de la aplicación.' };
+      return { ok: false, reason: t('backup.errNewer') };
     }
     var d = obj.data;
     if (!d || typeof d !== 'object' || Array.isArray(d) || !Array.isArray(d.events)) {
-      return { ok: false, reason: 'El respaldo no contiene la lista de registros.' };
+      return { ok: false, reason: t('backup.errNoEvents') };
     }
 
     var events = [], seen = Object.create(null), discarded = 0;
@@ -1320,46 +1403,44 @@
   function fmtExportedAt(iso) {
     var d = new Date(iso);
     if (!iso || isNaN(d.getTime())) return '';
-    return d.toLocaleString('es-ES', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    return d.toLocaleString(I18N.locale, { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   }
 
   function importBackupFile(file) {
     if (!file) return;
     if (file.size > 8 * 1024 * 1024) {
-      return alertDialog('El archivo es demasiado grande', ['Un respaldo de esta aplicación no debería superar los 8 MB. No se ha modificado ningún dato.']);
+      return alertDialog(t('backup.errBigTitle'), [t('backup.errBig')]);
     }
     var fr = new FileReader();
     fr.onerror = function () {
-      alertDialog('No se pudo leer el archivo', ['El navegador no consiguió abrirlo. No se ha modificado ningún dato.']);
+      alertDialog(t('backup.errReadTitle'), [t('backup.errRead')]);
     };
     fr.onload = function () {
       var res = parseBackup(String(fr.result || ''));
       if (!res.ok) {
-        return alertDialog('No se pudo restaurar el respaldo', [res.reason, 'No se ha modificado ningún dato.']);
+        return alertDialog(t('backup.failTitle'), [res.reason, t('backup.unchanged')]);
       }
       var lines = [
-        'Vas a restaurar un respaldo. Los datos actuales serán reemplazados por los datos contenidos en este archivo.',
+        t('backup.restoreWarn'),
         '',
-        'Ahora en la aplicación: ' + regLabel(state.events.length) + '.',
-        'En el respaldo: ' + regLabel(res.events.length) + '.'
+        t('backup.nowHave', { n: regLabel(state.events.length) }),
+        t('backup.fileHas', { n: regLabel(res.events.length) })
       ];
-      if (res.discarded) {
-        lines.push('Se omitirán ' + res.discarded + (res.discarded === 1 ? ' entrada' : ' entradas') + ' con un formato que la aplicación no reconoce.');
-      }
+      if (res.discarded) lines.push(tp('backup.skipped', res.discarded));
       var when = fmtExportedAt(res.exportedAt);
-      if (when) lines.push('Respaldo creado el ' + when + '.');
+      if (when) lines.push(t('backup.createdOn', { when: when }));
 
       openConfirm({
-        title: 'Restaurar respaldo',
+        title: t('backup.restoreTitle'),
         lines: lines,
-        cancelLabel: 'Cancelar',
-        okLabel: 'Restaurar',
+        cancelLabel: t('form.cancel'),
+        okLabel: t('backup.restore'),
         onOk: function () {
           state.events = res.events;
           state.child = res.child;
           persist();
           render();
-          toast('Respaldo restaurado · ' + regLabel(res.events.length));
+          toast(t('toast.restored', { n: regLabel(res.events.length) }));
         }
       });
     };
@@ -1375,6 +1456,7 @@
     document.body.classList.add('mbh-locked');
   }
   function closeModal() {
+    if (pendingLangChoice) { pendingLangChoice = false; I18N.setLang(I18N.lang); }
     $('modalSlot').innerHTML = '';
     document.body.classList.remove('mbh-locked');
     state.form = null; state.share = null;
@@ -1443,6 +1525,7 @@
     if ((el = e.target.closest('[data-finishsleep]'))) { finishSleep(el.getAttribute('data-finishsleep')); return; }
   });
 
+  $('langBtn').addEventListener('click', function () { openLangDialog(false); });
   $('child').addEventListener('input', function () {
     state.child = this.value;
     // Se actualiza aquí y no con render() para no mover el cursor mientras escribe.
@@ -1472,7 +1555,9 @@
   load();
   state.dateKey = keyOf(new Date());
   renderRegGrid();
+  renderLangBtn();
   render();
+  if (!I18N.chosen) openLangDialog(true);
 
   setInterval(function () {
     state.now = Date.now();
