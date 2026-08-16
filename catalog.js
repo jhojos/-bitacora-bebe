@@ -26,7 +26,7 @@ window.MBH_CATALOG = {
 
   /* Declaración de afiliación. Se muestra al final de la sección.
      Pon null si en algún momento no procede. */
-  disclosure: 'Cuando esta sección incluya enlaces a tiendas, algunos podrán generar una comisión para Mi Bebé Hoy si compras a través de ellos. El precio para ti no cambia.',
+  disclosure: 'Cuando esta sección incluya enlaces a tiendas, algunos podrán generar una comisión para La Bitácora si compras a través de ellos. El precio para ti no cambia.',
 
   /* ---------------------------------------------------------------------
      PAÍSES

@@ -1,6 +1,6 @@
-# Mi Bebé Hoy
+# La Bitácora
 
-Registro diario de los cuidados de un bebé. Aplicación web estática e instalable (PWA).
+Los registros diarios de la vida de tu bebé. Aplicación web estática e instalable (PWA).
 Sin cuentas, sin servidor, sin base de datos: **todos los datos viven en el
 dispositivo de quien la usa.**
 
@@ -71,7 +71,7 @@ Al subir una versión nueva, cambia el número de versión en la primera línea
 de `sw.js`:
 
 ```js
-var CACHE = CACHE_PREFIX + 'v3';   // → 'v4'
+var CACHE = CACHE_PREFIX + 'v5';   // → 'v6'
 ```
 
 El service worker ya revalida `index.html`, `app.css` y `app.js` en segundo

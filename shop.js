@@ -250,7 +250,7 @@
   function footHtml() {
     var parts = [];
     if (catalog.disclosure) parts.push('<p>' + esc(catalog.disclosure) + '</p>');
-    parts.push('<p>La compra se realiza siempre en el sitio del comercio. Mi Bebé Hoy no vende, no cobra, no envía y no gestiona devoluciones ni garantías.</p>');
+    parts.push('<p>La compra se realiza siempre en el sitio del comercio. La Bitácora no vende, no cobra, no envía y no gestiona devoluciones ni garantías.</p>');
     parts.push('<p>Esta sección no usa los registros de tu bebé para elegir qué mostrarte.</p>');
     return '<div class="shop-foot">' + parts.join('') + '</div>';
   }

@@ -13,8 +13,8 @@
   /* Nombre visible en los documentos generados (PDF y texto de compartir).
      Cambiar estas dos líneas renombra la aplicación en todas sus salidas;
      el rótulo de la cabecera está en index.html. */
-  var APP_NAME = 'Mi Bebé Hoy';
-  var APP_TAGLINE = 'Registro diario de sus cuidados';
+  var APP_NAME = 'La Bitácora';
+  var APP_TAGLINE = 'Los registros diarios de la vida de tu bebé';
 
   /* Identificación del formato de respaldo. La versión permite migrar el
      modelo de datos en el futuro sin romper los archivos ya guardados. */
@@ -267,7 +267,11 @@
     var rows = dayRows(state.dateKey);
     $('tlCount').textContent = rows.length ? regLabel(rows.length) : '';
     if (!rows.length) {
-      $('timeline').innerHTML = '<div class="tl-empty">Todavía no hay registros de este día.<br />Puedes añadir algo que ocurrió hace un rato.</div>';
+      // En un día pasado, "hoy empieza una nueva página" sería falso.
+      var texto = state.dateKey === keyOf(new Date())
+        ? 'Hoy empieza una nueva página.<br />Registra aquí lo que vaya ocurriendo durante el día.'
+        : 'Todavía no hay registros de este día.<br />Puedes añadir algo que ocurrió hace un rato.';
+      $('timeline').innerHTML = '<div class="tl-empty">' + texto + '</div>';
       return;
     }
     $('timeline').innerHTML = rows.map(function (x) {
@@ -333,7 +337,8 @@
           '<div class="sum-label">' + esc(it.label) + '</div>' +
           '<div class="sum-value">' + esc(it.value) + '</div>' +
         '</div>';
-      }).join('');
+      }).join('') +
+      (m.total ? '<div class="sum-close">Un día más queda guardado en su historia.</div>' : '');
   }
 
   function render() {
@@ -889,7 +894,7 @@
     /* --- cabecera --- */
     font('helvetica', 'normal', 7.6, MUTED);
     doc.setCharSpace(0.55);
-    txt((APP_NAME + ' · ' + APP_TAGLINE).toUpperCase(), M, y + 3);
+    txt(APP_NAME.toUpperCase(), M, y + 3);
     doc.setCharSpace(0);
     font('times', 'normal', 26, INK);
     txt(data.child, M, y + 13.5);
@@ -898,6 +903,9 @@
     txt('Generado: ' + data.generated, PW - M, y + 11, { align: 'right' });
     y += 17;
     line(M, y, PW - M, y, INK, 0.6);
+    y += 5;
+    font('helvetica', 'normal', 9, MUTED);
+    txt('Todo lo que pasó hoy, queda guardado aquí.', M, y);
     y += 8;
 
     /* --- resumen --- */
@@ -991,6 +999,9 @@
     y += 4;
     line(M, y, PW - M, y, RULE, 0.2);
     y += 4.5;
+    font('helvetica', 'normal', 9, BODY);
+    txt('Una página más de su historia.', M, y);
+    y += 5;
     font('helvetica', 'normal', 8, MUTED);
     doc.text(doc.splitTextToSize(pdfSafe(
       'Documento generado a partir de los datos introducidos por el cuidador. Contiene información registrada, no recomendaciones.'),
@@ -1001,7 +1012,7 @@
     for (var p = 1; p <= total; p++) {
       doc.setPage(p);
       font('helvetica', 'normal', 7.6, MUTED);
-      txt(APP_NAME + ' · ' + data.child, M, PH - 8);
+      txt(APP_NAME + ' · Registro diario de ' + data.child, M, PH - 8);
       txt(p + ' / ' + total, PW - M, PH - 8, { align: 'right' });
     }
     return doc;

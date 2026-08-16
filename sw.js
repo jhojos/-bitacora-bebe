@@ -20,7 +20,7 @@
    ========================================================================= */
 
 var CACHE_PREFIX = 'bitacora-bebe-';
-var CACHE = CACHE_PREFIX + 'v4';
+var CACHE = CACHE_PREFIX + 'v5';
 
 /* Rutas relativas a la ubicación de este archivo, para que funcione tanto en
    la raíz de un dominio como en una subcarpeta del tipo usuario.github.io/repositorio/ */
